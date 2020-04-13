@@ -1,10 +1,11 @@
 package db
 
-// ## ## CHANGE "DESC" to "DESCR" ## ## and now have HED and BOD
+// TODO: Change "DESC" to "DESCR" (cos DESC is SQL reserved word)
+// TODO: Use fieldnames HED and BOD
 
 // collate nocase
 
-// ADD FILE ATTRIBUTES and ROOT ELM and OTHER MCFILE STUFF
+// TODO: ADD FILE ATTRIBUTES and ROOT ELM and OTHER MCFILE STUFF
 
 var schemasALL = []string{
 	schemaINB,

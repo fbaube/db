@@ -16,31 +16,33 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// At the CLI:
 // sqlite3 my_database.sq3 ".backup 'backup_file.sq3'"
 // sqlite3 m_database.sq3 ".backup m_database.sq3.bak"
 // sqlite3 my_database .backup > my_database.back
 
 // https://github.com/golang/go/wiki/SQLInterface
-// ExecContext is used for queries where no rows are returned:
+// ExecContext is used when no rows are returned;
 // QueryContext is used for retrieving rows.
 // QueryRowContext is used where only a single row is expected.
 // If a DB column is nullable, pass a type supporting null values to Scan.
 // Only NullBool, NullFloat64, NullInt64, NullString are in database/sql.
 // Implementations of DB-specific null types are left to the DB driver.
 
+// DBNAME defaults to "mmmc.db"
 const DBNAME = "mmmc.db"
 
+// MmmcDB stores DB filepaths, DB cnxns, DB txns.
 type MmmcDB struct {
 	DirrPath FU.BasicPath
 	FilePath FU.BasicPath
-	// Connection
-	// theSqlDB *sql.DB
 	// Connection
 	theSqlxDB *sqlx.DB
 	// Session-level open Txn (if non-nil)
 	TheSqlxTxn *sqlx.Tx
 }
 
+// DBX returns the DB's sqlx DB cnxn
 func (p *MmmcDB) DBX() *sqlx.DB {
 	return p.theSqlxDB
 }
@@ -53,15 +55,18 @@ var stmt *sql.Stmt
 var rslt *sql.Result
 var e error
 
-// NewlyConfiguredMmmcDB initializes path-related variables but does not do more.
-// argpath can be a relative path passed to the CLI.
-// Unlike how some other filepath arguments are handled,
-// if the DB path is "", it is set to the CWD (current
+// NewMmmcDB initializes path-related variables but does not do more.
+// argpath can be a relative path passed to the CLI;
+// if it is "", the DB path is set to the CWD (current
 // working directory).
-func NewlyConfiguredMmmcDB(argpath string) (*MmmcDB, error) {
+func NewMmmcDB(argpath string) (*MmmcDB, error) {
 	pDB := new(MmmcDB)
 	if argpath == "" {
-		argpath = "."
+		var e error
+		argpath, e = os.Getwd() // "."
+		if e != nil {
+			panic(e)
+		}
 	}
 	// If the DB name was accidentally provided, trim it off to prevent problems.
 	var relFP string
@@ -98,10 +103,15 @@ func mustExecStmt(s string) {
 // MustCreateTable makes sure it exists but
 // does NOT drop an already-existing table.
 func MustExistTable(s string) {
+	println("db.MustExistTable: WTH: ", s)
 	mustExecStmt(s)
 }
 
-func Make09azStringLen1(i int) string {
+// Ito09az converts its int arg (0..35) to
+// a string of length one, in the range
+// (for int  0..9)  "0".."9",
+// (for int 10..35) "a".."z"
+func Ito09az(i int) string {
 	if i <= 9 {
 		return strconv.Itoa(i)
 	}
@@ -110,39 +120,43 @@ func Make09azStringLen1(i int) string {
 	return string(bb)
 }
 
-func ComprestNowString() string {
+// NowAsYMDHM maps (reversibly) the current
+// time to "YMDhm" (where m is minutes / 2).
+func NowAsYMDHM() string {
 	var now = time.Now()
 	// year = last digit
 	var y string = fmt.Sprintf("%d", now.Year())[3:]
-	var m string = Make09azStringLen1(int(now.Month()))
-	var d string = Make09azStringLen1(now.Day())
-	var h string = Make09azStringLen1(now.Hour())
-	var n string = Make09azStringLen1(now.Minute() / 2)
+	var m string = Ito09az(int(now.Month()))
+	var d string = Ito09az(now.Day())
+	var h string = Ito09az(now.Hour())
+	var n string = Ito09az(now.Minute() / 2)
 	// fmt.Printf("%s-%s-%s-%s-%s", y, m, d, h, n)
 	return fmt.Sprintf("%s%s%s%s%s", y, m, d, h, n)
 }
 
-func ComprestYYYYMMstring() string {
+// NowAsYM maps (reversibly) the current
+// year+month to "YM".
+func NowAsYM() string {
 	var now = time.Now()
 	// year = last digit
 	var y string = fmt.Sprintf("%d", now.Year())[3:]
-	var m string = Make09azStringLen1(int(now.Month()))
+	var m string = Ito09az(int(now.Month()))
 	// fmt.Printf("%s-%s-%s-%s-%s", y, m, d, h, n)
 	return fmt.Sprintf("%s%s", y, m)
 }
 
 // MoveCurrentToBackup makes a best effort but can fail if the
 // backup destination is a directory or has a permissions problem.
-// The current DB is renamed and therefore "disappears".
+// The current DB is renamed and so "disappears" from production.
 func (p *MmmcDB) MoveCurrentToBackup() error {
 	if !p.FilePath.Exists {
 		println("    --> No current DB to move to backup")
 		return nil
 	}
-	// func Rename(oldpath, newpath string) error
-	var cns = ComprestNowString()
+	var cns = NowAsYMDHM()
 	var fromFP string = p.FilePath.AbsFilePath.S()
 	var toFP string = p.FilePath.AbsFilePathParts.BaseName + "-" + cns + ".db"
+	// func os.Rename(oldpath, newpath string) error
 	e := os.Rename(fromFP, toFP)
 	if e != nil {
 		return fmt.Errorf("Can't move current DB to <%s>: %w: ", toFP, e)
@@ -159,7 +173,7 @@ func (p *MmmcDB) DupeCurrentToBackup() error {
 		println("    --> No current DB to duplicate to backup")
 		return nil
 	}
-	var cns = ComprestNowString()
+	var cns = NowAsYMDHM()
 	var fromFP string = p.FilePath.AbsFilePath.S()
 	var toFP string = p.FilePath.BaseName + "-" + cns + ".db"
 
@@ -171,10 +185,10 @@ func (p *MmmcDB) DupeCurrentToBackup() error {
 	return nil
 }
 
-// ForceEmpty is a convenience function.
+// ForceEmpty is a convenience function. It first makes a backup.
 func (p *MmmcDB) ForceEmpty() {
 	if theDB == nil {
-		panic("db.forcempty.unitialized.L176")
+		panic("db.forcempty.uninitd.L193")
 	}
 	p.MoveCurrentToBackup()
 	p.ForceExist()
@@ -183,7 +197,7 @@ func (p *MmmcDB) ForceEmpty() {
 // ForceExist creates a new empty DB with the proper schema.
 func (p *MmmcDB) ForceExist() {
 	if theDB == nil {
-		panic("db.forcexist.uninitd.L185")
+		panic("db.forcexist.uninitd.L202")
 	}
 	var dest string = p.FilePath.AbsFilePath.S()
 	// println("    --> Creating new DB at:", dest)

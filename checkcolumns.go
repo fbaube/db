@@ -6,12 +6,14 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func (pMDB *MmmcDB) CheckColumns(tableName string) {
+// CheckColumns seems to do some kind of checking
+// on the columns in the specified table. 
+func (p *MmmcDB) CheckColumns(tableName string) {
 	var e error
 	var rows *sqlx.Rows
 	var cols []interface{}
 
-	rows, e = pMDB.theSqlxDB.Queryx("SELECT * FROM " + tableName + " LIMIT 1")
+	rows, e = p.theSqlxDB.Queryx("SELECT * FROM " + tableName + " LIMIT 1")
 	if e != nil {
 		println("==> CheckColumns-1 failed")
 		return
@@ -29,7 +31,7 @@ func (pMDB *MmmcDB) CheckColumns(tableName string) {
 	}
 	fmt.Printf("    db.chk-cols: c-slice-n: %d \n", n)
 
-	rows, e = pMDB.theSqlxDB.Queryx("SELECT * FROM " + tableName + " LIMIT 1")
+	rows, e = p.theSqlxDB.Queryx("SELECT * FROM " + tableName + " LIMIT 1")
 	if e != nil {
 		println("==> CheckColumns-2 failed")
 		return

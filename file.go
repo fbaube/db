@@ -8,6 +8,7 @@ import (
 	FU "github.com/fbaube/fileutils"
 )
 
+// File handles an MMC file.
 type File struct {
 	Idx_File    int    //  `db:"idx_file"`
 	Idx_Inb     int    // `db:"idx_inb"`
@@ -23,11 +24,12 @@ type File struct {
 	Bod         string
 }
 
-func (pMDB *MmmcDB) GetFileAll() (pp []*File) {
+// GetFilesAll gets all files in the DB.
+func (p *MmmcDB) GetFilesAll() (pp []*File) {
 	pp = make([]*File, 0, 16)
-	rows, err := pMDB.theSqlxDB.Queryx("SELECT * FROM FILE")
+	rows, err := p.theSqlxDB.Queryx("SELECT * FROM FILE")
 	if err != nil {
-		panic("GetFileAll")
+		panic("GetFilesAll")
 	}
 	for rows.Next() {
 		p := new(File)
@@ -41,12 +43,13 @@ func (pMDB *MmmcDB) GetFileAll() (pp []*File) {
 	return pp
 }
 
-func (pMDB *MmmcDB) InsertFile(p *File) (idx int, e error) {
+// InsertFile adds a file to the DB.
+func (p *MmmcDB) InsertFile(pF *File) (idx int, e error) {
 	// var e error
 	var rslt sql.Result
-	rslt, e = pMDB.TheSqlxTxn.NamedExec(
+	rslt, e = p.TheSqlxTxn.NamedExec(
 		// var rows *sqlx.Rows
-		// rows, e = pMDB.theSqlxDB.NamedQuery(
+		// rows, e = p.theSqlxDB.NamedQuery(
 		/*
 						Idx         int    `db:"i_FILE"`
 						InbatchIdx  int    `db:"i_INB"`

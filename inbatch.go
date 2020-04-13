@@ -8,6 +8,7 @@ import (
 	FU "github.com/fbaube/fileutils"
 )
 
+// Inbatch describes a single import batch at the CLI.
 type Inbatch struct {
 	Idx         int `db:"idx_inb"`
 	Desc        string
@@ -17,9 +18,10 @@ type Inbatch struct {
 	AbsFilePath FU.AbsFilePath // necessary ceremony
 }
 
-func (pMDB *MmmcDB) GetInbatchAll() (pp []*Inbatch) {
+// GetInbatchesAll gets all input batches in the system.
+func (p *MmmcDB) GetInbatchesAll() (pp []*Inbatch) {
 	pp = make([]*Inbatch, 0, 16)
-	rows, err := pMDB.theSqlxDB.Queryx("SELECT * FROM INB")
+	rows, err := p.theSqlxDB.Queryx("SELECT * FROM INB")
 	if err != nil {
 		panic("GetInbatchAll")
 	}
@@ -35,13 +37,14 @@ func (pMDB *MmmcDB) GetInbatchAll() (pp []*Inbatch) {
 	return pp
 }
 
-func (pMDB *MmmcDB) InsertInbatch(p *Inbatch) (idx int, e error) {
+// InsertInbatch adds an input batch to the system.
+func (p *MmmcDB) InsertInbatch(pIB *Inbatch) (idx int, e error) {
 	// var e error
 	var rslt sql.Result
-	// rslt, e = pMDB.theSqlxDB.NamedExec(
-	rslt, e = pMDB.TheSqlxTxn.NamedExec(
+	// rslt, e = p.theSqlxDB.NamedExec(
+	rslt, e = p.TheSqlxTxn.NamedExec(
 		// var rows *sqlx.Rows
-		// rows, e = pMDB.theSqlxDB.NamedQuery(
+		// rows, e = p.theSqlxDB.NamedQuery(
 		"INSERT INTO INB(relfilepath, absfilepath, desc) "+
 			"VALUES(:relfilepath, :absfilepath, :desc)", p) // " RETURNING i_INB", p)
 	if e != nil {
