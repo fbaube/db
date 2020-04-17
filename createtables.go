@@ -8,7 +8,7 @@ package db
 // TODO: ADD FILE ATTRIBUTES and ROOT ELM and OTHER MCFILE STUFF
 
 var schemasALL = []string{
-	schemaINB,
+	// schemaINB,
 	schemaFILE,
 	schemaTREF,
 }
