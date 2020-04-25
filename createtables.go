@@ -9,10 +9,11 @@ package db
 
 var schemasALL = []string{
 	// schemaINB,
-	schemaFILE,
+	// schemaFILE,
 	schemaTREF,
 }
 
+/*
 // schemaINB is an Input Batch.
 // `creatime` as a text might not implement timezones.
 var schemaINB string = `INB(
@@ -42,6 +43,7 @@ absfilepath text not null,
 				bod text not null, -- Body: the Content
 FOREIGN KEY(idx_inb) REFERENCES INB(idx_inb)
  )`
+*/
 
 // schemaTREF is a reference from a Map to a Topic (or subclass thereof).
 // Note that this does NOT (necessarily) refer to the DITA `topictref` element!
@@ -57,12 +59,6 @@ var schemaTREF string = `TREF
   )`
 
 /*
-
-An MCFILE HAS
-- XmlFileMeta
-- LinkInfos
-- Xmltems
-- DitaInfo
 
 A LinkInfos has
 xmlIDs

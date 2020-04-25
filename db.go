@@ -221,7 +221,8 @@ func (p *MmmcDB) ForceExist() {
 	for _, s := range schemasALL {
 		mustExecStmt("CREATE TABLE IF NOT EXISTS " + s)
 	}
-	p.CreateTable_Inbatch_sqlite() 
+	p.CreateTable_Inbatch_sqlite()
+	p.CreateTable_Content_sqlite() 
 
 	mustExecStmt("PRAGMA foreign_keys = ON;")
 }

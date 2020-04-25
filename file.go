@@ -24,6 +24,22 @@ type File struct {
 	Bod         string
 }
 
+func (pDB *MmmcDB) CreateTable_Content_sqlite() {
+	pDB.CreateTable_sqlite("content",
+    []string { "inbatch" }, // FK
+    nil, // intFields
+    nil, // intRanges
+    []string { "relfilepath", "absfilepath", "creatime",
+			"mimetype", "mtype", "doctype",
+			"hedraw", "bodraw", "anl" },
+    []string { "Rel.FP (from CLI)", "Absolute filepath",
+							 "Creation date+time", "MIME type",
+							 "M-Type", "XML Doctype",
+							 "Doc head/meta raw", "Doc cont.body raw",
+			 				 "Doc cont.analysis" },
+							 )
+		}
+
 // GetFilesAll gets all files in the DB.
 func (p *MmmcDB) GetFilesAll() (pp []*File) {
 	pp = make([]*File, 0, 16)
