@@ -8,42 +8,30 @@ import (
   S "strings"
 )
 
-func (pDB *MmmcDB) CreateTable_sqlite(
-	tableName string,
-	forenKeys []string,
-	intFields []string,
-	intRanges []int,    // to DB[0] // -1, 0, 1
-	strFields []string,
-	strDescrs []string) { // to DB[0]
-	/*
-	var schemaINB string = `INB(
- idx_inb integer not null primary key, -- NOTE: "integer", not "int"
-relfilepath text not null,
-absfilepath text not null,
-     creatime text not null default (datetime('now')), -- UTC ISO-8601
-       desc text not null default "No load message", -- from CLI commit msg
-     filect int  not null check (filect >= 0) default 0  )`
-	*/
+// CreateTable_sqlite creates a table for our simplified DB model where
+// all columns can be either string or int. Note that all arguments except
+// the first can be nil.
+func (pDB *MmmcDB) CreateTable_sqlite(ts TableSpec) {
 	var CTS string // the Create Table string
 	var hasFKs, hasInts, hasStrs bool
-	hasFKs  = (forenKeys != nil && len(forenKeys) > 0)
-	hasInts = (intFields != nil && len(intFields) > 0)
-	hasStrs = (strFields != nil && len(strFields) > 0)
+	hasFKs  = (ts.forenKeys != nil && len(ts.forenKeys) > 0)
+	hasInts = (ts.intFields != nil && len(ts.intFields) > 0)
+	hasStrs = (ts.strFields != nil && len(ts.strFields) > 0)
 
-	CTS = "CREATE TABLE " + tableName + "(\n"
-	CTS += "idx_" + tableName + " integer not null primary key, "
+	CTS = "CREATE TABLE " + ts.tableName + "(\n"
+	CTS += "idx_" + ts.tableName + " integer not null primary key, "
 	CTS += "-- NOTE: integer, not int \n"
 	if hasFKs {
-		for _, tbl := range forenKeys {
+		for _, tbl := range ts.forenKeys {
 			// idx_inb integer not null references INB,
-			CTS += "idx_" + tbl + " integer not null references " + tbl + ", \n"
+			CTS += "idx_" + tbl + " integer " + /* not null */ "references " + tbl + ", \n"
 		}
 	}
 	if hasInts {
-		for i, fld := range intFields {
+		for i, fld := range ts.intFields {
 			// filect int not null check (filect >= 0) default 0
 			CTS += fld + " int not null"
-			switch intRanges[i] {
+			switch ts.intRanges[i] {
 			case 1:
 				// check (filect >= 0)
 				CTS += " check (" + fld + " > 0), \n"
@@ -55,14 +43,14 @@ absfilepath text not null,
 		}
 	}
 	if hasStrs {
-		for _, fld := range strFields {
+		for _, fld := range ts.strFields {
 			// filect int not null check (filect >= 0) default 0
 			CTS += fld + " text not null, \n"
 		}
 	}
 	if hasFKs {
 		// FOREIGN KEY(idx_inb) REFERENCES INB(idx_inb)
-		for _, tbl := range forenKeys {
+		for _, tbl := range ts.forenKeys {
 			// idx_inb integer not null references INB,
 			CTS += "foreign key(idx_" + tbl + ") references " + tbl + "(idx_" + tbl + "), \n"
 		}
@@ -72,8 +60,8 @@ absfilepath text not null,
 	CTS = S.TrimSuffix(CTS, ",")
 	CTS += "\n)"
 	println("= = = = = = = = \n", CTS, "= = = = = = = =")
-	pDB.theSqlxDB.MustExec(CTS)
-  pDB.DumpTableSchema_sqlite(tableName, os.Stdout)
+	pDB.DB.MustExec(CTS)
+  pDB.DumpTableSchema_sqlite(ts.tableName, os.Stdout)
 	println("TODO: Insert record with IDX 0 and string descr's")
   println("TODO: Dump all table records (i.e. just one)")
 }
@@ -85,13 +73,13 @@ func (pDB *MmmcDB) DumpTableSchema_sqlite(tableName string, w io.Writer) {
   var C []*sql.ColumnType
   // func (db *DB) Query(query string, args ...interface{}) (*Rows, error)
   // func (rs *Rows) ColumnTypes() ([]*ColumnType, error)
-  R,e = pDB.theSqlxDB.Query("select * from " + tableName)
+  R,e = pDB.DB.Query("select * from " + tableName)
   if e != nil { panic("DB: sqlite1: " + e.Error())}
   C,e = R.ColumnTypes()
   if e != nil { panic("DB: sqlite2: " + e.Error())}
   for i, c := range C {
     L,_ := c.Length()
-    fmt.Printf("col[%d]: nm<%s> dbtp<%s> len<%d> gotp<%s> \n",
+    fmt.Printf("col[%d]: %s \t dbtp<%s> len<%d> gotp<%v> \n",
       i, c.Name(), c.DatabaseTypeName(), L, c.ScanType())
   }
 }
