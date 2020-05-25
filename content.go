@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"github.com/jmoiron/sqlx"
 	"fmt"
 	"log"
 
@@ -9,9 +10,12 @@ import (
 )
 
 type Content struct {
-	Idx int         // `db:"idx_content"`
-	Idx_Inbatch int // `db:"idx_inbatch"`
-	BaseInfo
+	Idx int // `db:"idx_content"`
+	Idx_Inbatch int
+	// FU.Paths // does not work :-( )
+	RelFilePath string
+	AbsFilePath FU.AbsFilePath // necessary ceremony // `db:"absfilepath"` dusnt work
+	Times
 	Meta_raw string
 	Text_raw string
 	Analysis
@@ -21,17 +25,10 @@ type Content struct {
 	// ExtlLinkDefs // link targets that are visible outside this File
 }
 
-type BaseInfo struct {
-	RelFilePath string
-	// AbsFilePath FU.AbsFilePath // necessary ceremony (problem in sqlx)
-	AbsFilePath FU.AbsFilePath `db:"absfilepath"` // necessary ceremony
-	Creatime string // ISO-8601 / RFC 3339
-}
-
 type Analysis struct {
 	MimeType    string
-	Mtype       string
-	RootTag     string
+	MType       string
+	RootTag     string // e.g. <html>, enclosing both <head> and <body>
 	RootAtts    string // e.g. <html lang="en">
 	XmlContype  string
 	XmlDoctype  string
@@ -43,13 +40,18 @@ var TableSpec_Content = TableSpec {
       []string { "inbatch" }, // FK
       nil, // intFields
       nil, // intRanges
-      []string { "relfilepath", "absfilepath",
-				"creatime", "meta_raw", "text_raw",
+      []string {
+				"relfilepath", "absfilepath", // Paths
+				"created", "imported", "edited", // Times
+				"meta_raw", "text_raw",
+				// Analysis
 				"mimetype", "mtype", "roottag", "rootatts",
 				"xmlcontype", "xmldoctype", "ditacontype" },
       []string { "Rel.FP (from CLI)",
 								 "Absolute filepath",
   							 "Creation date+time",
+								 "DB import date+time",
+								 "Last edit date+time",
 								 "Meta/header (raw)",
 								 "Text/body (raw)",
 								 "MIME type",
@@ -81,27 +83,27 @@ func (p *MmmcDB) GetContentAll() (pp []*Content) {
 }
 
 // InsertContent adds a content item (i.e. a file) to the DB.
-func (p *MmmcDB) InsertContent(pC *Content) (idx int, e error) {
+func (p *MmmcDB) InsertContent(pC *Content, pT *sqlx.Tx) (idx int, e error) {
 	var err error
 	var rslt sql.Result
 
-	tx := p.MustBegin()
 	// []string { "relfilepath", "absfilepath",
 	// 	"creatime", "meta_raw", "text_raw",
 	// 	"mimetype", "mtype", "roottag", "rootatts",
 	// 	"xmlcontype", "xmldoctype", "ditacontype" },
 	s := "INSERT INTO CONTENT(" +
-		"relfilepath, absfilepath, creatime, meta_raw, text_raw, " +
+		"relfilepath, absfilepath, created, imported, edited, meta_raw, text_raw, " +
 		"mimetype, mtype, roottag, rootatts, xmlcontype, xmldoctype, ditacontype" +
 		") VALUES(" +
-		":relfilepath, :absfilepath, :creatime, :meta_raw, :text_raw, " +
-		":mimetype, :mtype, :roottag, :rootatts, :xmlcontype, :xmldoctype, :ditacontype)" // " RETURNING i_INB", p)
-	rslt, err = tx.NamedExec(s, pC)
-	tx.Commit()
+		":relfilepath, :absfilepath, " +
+		":created, :imported, :edited, " +
+		":meta_raw, :text_raw, " +
+		":mimetype, :mtype, :roottag, :rootatts, " +
+		":xmlcontype, :xmldoctype, :ditacontype)" // " RETURNING i_INB", p)
+	rslt, err = pT.NamedExec(s, pC)
 	if err != nil {
 		panic(err)
 	}
-
 	liid, _ := rslt.LastInsertId()
 	// naff, _ := rslt.RowsAffected()
 	// fmt.Printf("    DD:InsertFile: ID %d nR %d \n", liid, naff)

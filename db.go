@@ -14,6 +14,13 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// Times has (create, import, last edit) and uses only ISO-8601 / RFC 3339.
+type Times struct {
+	Created  string
+	Imported string
+	Edited   string
+}
+
 // At the CLI:
 // sqlite3 my_database.sq3 ".backup 'backup_file.sq3'"
 // sqlite3 m_database.sq3 ".backup m_database.sq3.bak"
@@ -35,7 +42,11 @@ type MmmcDB struct {
 	FU.BasicPath
 	// Connection
 	*sqlx.DB
-	// Session-level open Txn (if non-nil)
+	// Session-level open Txn (if non-nil). Relevant API:
+	// func (db *sqlx.DB)    Beginx() (*sqlx.Tx, error)
+	// func (db *sqlx.DB) MustBegin()  *sqlx.Tx
+	// func (tx *sql.Tx)     Commit()   error
+	// func (tx *sql.Tx)   Rollback()   error
 	*sqlx.Tx
 }
 
@@ -43,6 +54,7 @@ type MmmcDB struct {
 // three of its path-related fields are properly initialized.
 var theDB *MmmcDB
 
+// NOTE These are probably disastrous in multithreaded use.
 var stmt *sql.Stmt
 var rslt *sql.Result
 var e error
@@ -80,7 +92,7 @@ func NewMmmcDB(argpath string) (*MmmcDB, error) {
 // ForceExistDBandTables creates a new empty DB with the proper schema.
 func (p *MmmcDB) ForceExistDBandTables() {
 	if theDB == nil {
-		panic("db.forcexist.uninitd.L83")
+		panic("db.forcexist.uninitd.L95")
 	}
 	var dest string = p.BasicPath.AbsFilePath.S()
 	// println("    --> Creating new DB at:", dest)
@@ -108,5 +120,7 @@ func (p *MmmcDB) ForceExistDBandTables() {
 	p.CreateTable_sqlite(TableSpec_Inbatch)
 	p.CreateTable_sqlite(TableSpec_Content)
 
+	// It seems weird that this is necessary, but cos of some retro compatibility,
+	// SQLite does not by default enforce foreign key constraints. 
 	mustExecStmt("PRAGMA foreign_keys = ON;")
 }
