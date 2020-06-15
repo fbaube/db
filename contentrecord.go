@@ -5,33 +5,25 @@ import (
 	"github.com/jmoiron/sqlx"
 	"fmt"
 	"log"
-
 	FU "github.com/fbaube/fileutils"
-	XM "github.com/fbaube/xmlmodels"
+	SU "github.com/fbaube/stringutils"
 )
 
-type Content struct {
+type ContentRecord struct {
 	Idx int // `db:"idx_content"`
 	Idx_Inbatch int
 	FU.Paths
 	Times
-	Meta_raw string
-	Text_raw string
-	Analysis
+	Raw        string
+	Meta_raw   string
+	MetaFormat string
+	Text_raw   string
+	MetaProps  SU.PropSet
+	FU.AnalysisRecord
 	// For these next two fields, instead put the refs & defs
 	//   into another table that FKEY's into this table.
 	// ExtlLinkRefs // links that point outside this File
 	// ExtlLinkDefs // link targets that are visible outside this File
-}
-
-type Analysis struct {
-	IsXml       int
-	MimeType    string
-	MType       string
-	RootTag     string // e.g. <html>, enclosing both <head> and <body>
-	RootAtts    string // e.g. <html lang="en">
-	XM.XmlInfo
-	XM.DitaInfo
 }
 
 var TableSpec_Content = TableSpec {
@@ -64,14 +56,14 @@ var TableSpec_Content = TableSpec {
   	}
 
 // GetContentAll gets all content in the DB.
-func (p *MmmcDB) GetContentAll() (pp []*Content) {
-	pp = make([]*Content, 0, 16)
+func (p *MmmcDB) GetContentAll() (pp []*ContentRecord) {
+	pp = make([]*ContentRecord, 0, 16)
 	rows, err := p.DB.Queryx("SELECT * FROM CONTENT")
 	if err != nil {
 		panic("GetContentAll")
 	}
 	for rows.Next() {
-		p := new(Content)
+		p := new(ContentRecord)
 		err := rows.StructScan(p)
 		if err != nil {
 			log.Fatalln(err)
@@ -82,8 +74,8 @@ func (p *MmmcDB) GetContentAll() (pp []*Content) {
 	return pp
 }
 
-// InsertContent adds a content item (i.e. a file) to the DB.
-func (p *MmmcDB) InsertContent(pC *Content, pT *sqlx.Tx) (idx int, e error) {
+// InsertContentRecord adds a content item (i.e. a file) to the DB.
+func (p *MmmcDB) InsertContentRecord(pC *ContentRecord, pT *sqlx.Tx) (idx int, e error) {
 	var err error
 	var rslt sql.Result
 
@@ -114,16 +106,7 @@ func (p *MmmcDB) InsertContent(pC *Content, pT *sqlx.Tx) (idx int, e error) {
 		pC.XmlContype, pC.XmlDoctype, pC.DitaMarkupLg, pC.DitaContype)
 
 	println("EXEC:", s)
-	/*
-		":relfilepath, " +
-		// ":absfilepath, " +
-		":created, :imported, :edited, " +
-		":meta_raw, :text_raw, " +
-		// ":mimetype, " +
-		":mtype, :roottag, :rootatts, " +
-		// ":xmlcontype, " +
-		":xmldoctype, :ditamarkuplg, :ditacontype)" // " RETURNING i_INB", p)
-		*/
+
 	rslt, err = pT.NamedExec(s, pC)
 	if err != nil {
 		println("========")
