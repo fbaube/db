@@ -10,13 +10,13 @@ import (
 // backup destination is a directory or has a permissions problem.
 // The current DB is renamed and so "disappears" from production.
 func (p *MmmcDB) MoveCurrentToBackup() error {
-	if !p.BasicPath.Exists {
+	if !p.PathInfo.Exists {
 		println("    --> No current DB to move to backup")
 		return nil
 	}
 	var cns = NowAsYMDHM()
-	var fromFP string = p.BasicPath.AbsFilePath.S()
-	var toFP string = p.BasicPath.AbsFilePathParts.BaseName + "-" + cns + ".db"
+	var fromFP string = p.PathInfo.AbsFP()
+	var   toFP string = p.PathInfo.AbsFilePathParts.BaseName + "-" + cns + ".db"
 	// func os.Rename(oldpath, newpath string) error
 	e := os.Rename(fromFP, toFP)
 	if e != nil {
@@ -30,13 +30,13 @@ func (p *MmmcDB) MoveCurrentToBackup() error {
 // backup destination is a directory or has a permissions problem.
 // The current DB is not affected.
 func (p *MmmcDB) DupeCurrentToBackup() error {
-	if !p.BasicPath.Exists {
+	if !p.PathInfo.Exists {
 		println("    --> No current DB to duplicate to backup")
 		return nil
 	}
 	var cns = NowAsYMDHM()
-	var fromFP string = p.BasicPath.AbsFilePath.S()
-	var toFP string = p.BasicPath.BaseName + "-" + cns + ".db"
+	var fromFP string = p.PathInfo.AbsFP()
+	var   toFP string = p.PathInfo.BaseName + "-" + cns + ".db"
 
 	e := FU.CopyFromTo(fromFP, toFP)
 	if e != nil {

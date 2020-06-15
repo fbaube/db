@@ -39,7 +39,7 @@ const DBNAME = "mmmc.db"
 
 // MmmcDB stores DB filepaths, DB cnxns, DB txns.
 type MmmcDB struct {
-	FU.BasicPath
+	FU.PathInfo
 	// Connection
 	*sqlx.DB
 	// Session-level open Txn (if non-nil). Relevant API:
@@ -79,12 +79,12 @@ func NewMmmcDB(argpath string) (*MmmcDB, error) {
 	// pDB.DirrPath = *FU.NewBasicPath(relFP)
 	// if !pDB.DirrPath.IsOkayDir() { // PathType() != "DIR" {
 	// dp := FU.NewBasicPath(pDB.BasicPath.AbsFilePathParts.DirPath.S())
-	dp := FU.NewBasicPath(FP.Dir(pDB.BasicPath.S()))
+	dp := FU.NewPathInfo(FP.Dir(pDB.PathInfo.AbsFP()))
 	if !dp.IsOkayDir() {
 		retErr := MU.TracedError(fmt.Errorf("DB dir not exist or not a dir: %s", dp))
 		return nil, retErr
 	}
-	pDB.BasicPath = *FU.NewBasicPath(FP.Join(relFP, "mmmc.db"))
+	pDB.PathInfo = *FU.NewPathInfo(FP.Join(relFP, "mmmc.db"))
 	theDB = pDB
 	return pDB, nil
 }
@@ -94,7 +94,7 @@ func (p *MmmcDB) ForceExistDBandTables() {
 	if theDB == nil {
 		panic("db.forcexist.uninitd.L95")
 	}
-	var dest string = p.BasicPath.AbsFilePath.S()
+	var dest string = p.PathInfo.AbsFP() 
 	// println("    --> Creating new DB at:", dest)
 	var e error
 	var theSqlDB *sql.DB
@@ -121,6 +121,6 @@ func (p *MmmcDB) ForceExistDBandTables() {
 	p.CreateTable_sqlite(TableSpec_Content)
 
 	// It seems weird that this is necessary, but cos of some retro compatibility,
-	// SQLite does not by default enforce foreign key constraints. 
+	// SQLite does not by default enforce foreign key constraints.
 	mustExecStmt("PRAGMA foreign_keys = ON;")
 }

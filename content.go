@@ -7,14 +7,13 @@ import (
 	"log"
 
 	FU "github.com/fbaube/fileutils"
+	XM "github.com/fbaube/xmlmodels"
 )
 
 type Content struct {
 	Idx int // `db:"idx_content"`
 	Idx_Inbatch int
-	// FU.Paths // does not work :-( )
-	RelFilePath string
-	AbsFilePath FU.AbsFilePath // necessary ceremony // `db:"absfilepath"` dusnt work
+	FU.Paths
 	Times
 	Meta_raw string
 	Text_raw string
@@ -26,13 +25,13 @@ type Content struct {
 }
 
 type Analysis struct {
+	IsXml       int
 	MimeType    string
 	MType       string
 	RootTag     string // e.g. <html>, enclosing both <head> and <body>
 	RootAtts    string // e.g. <html lang="en">
-	XmlContype  string
-	XmlDoctype  string
-	DitaContype string
+	XM.XmlInfo
+	XM.DitaInfo
 }
 
 var TableSpec_Content = TableSpec {
@@ -46,7 +45,7 @@ var TableSpec_Content = TableSpec {
 				"meta_raw", "text_raw",
 				// Analysis
 				"mimetype", "mtype", "roottag", "rootatts",
-				"xmlcontype", "xmldoctype", "ditacontype" },
+				"xmlcontype", "xmldoctype", "ditamarkuplg", "ditacontype" },
       []string { "Rel.FP (from CLI)",
 								 "Absolute filepath",
   							 "Creation date+time",
@@ -60,6 +59,7 @@ var TableSpec_Content = TableSpec {
 								 "Root attrs",
 								 "XML contype",
 								 "XML doctype",
+								 "DITA markuplg",
 								 "DITA contype" },
   	}
 
@@ -91,18 +91,45 @@ func (p *MmmcDB) InsertContent(pC *Content, pT *sqlx.Tx) (idx int, e error) {
 	// 	"creatime", "meta_raw", "text_raw",
 	// 	"mimetype", "mtype", "roottag", "rootatts",
 	// 	"xmlcontype", "xmldoctype", "ditacontype" },
-	s := "INSERT INTO CONTENT(" +
-		"relfilepath, absfilepath, created, imported, edited, meta_raw, text_raw, " +
-		"mimetype, mtype, roottag, rootatts, xmlcontype, xmldoctype, ditacontype" +
+	println("REL:", pC.RelFilePath)
+	println("ABS:", pC.AbsFilePath)
+	var s string
+	s = fmt.Sprintf(
+		"INSERT INTO CONTENT(" +
+		"relfilepath, absfilepath, " +
+		"created, imported, edited, " +
+		"meta_raw, text_raw, " +
+		"mimetype, mtype, roottag, rootatts, " +
+		"xmlcontype, xmldoctype, ditamarkuplg, ditacontype" +
 		") VALUES(" +
-		":relfilepath, :absfilepath, " +
+			"\"%s\", \"%s\", " +
+			"\"%s\", \"%s\", \"%s\", " +
+			"\"%s\", \"%s\", " +
+			"\"%s\", \"%s\", \"%s\", \"%s\", " +
+			"\"%s\", \"%s\", \"%s\", \"%s\")",
+		pC.RelFilePath, pC.AbsFilePath,
+		pC.Created, pC.Imported, pC.Edited,
+		pC.Meta_raw, pC.Text_raw,
+		pC.MimeType, pC.MType, pC.RootTag, pC.RootAtts,
+		pC.XmlContype, pC.XmlDoctype, pC.DitaMarkupLg, pC.DitaContype)
+
+	println("EXEC:", s)
+	/*
+		":relfilepath, " +
+		// ":absfilepath, " +
 		":created, :imported, :edited, " +
 		":meta_raw, :text_raw, " +
-		":mimetype, :mtype, :roottag, :rootatts, " +
-		":xmlcontype, :xmldoctype, :ditacontype)" // " RETURNING i_INB", p)
+		// ":mimetype, " +
+		":mtype, :roottag, :rootatts, " +
+		// ":xmlcontype, " +
+		":xmldoctype, :ditamarkuplg, :ditacontype)" // " RETURNING i_INB", p)
+		*/
 	rslt, err = pT.NamedExec(s, pC)
 	if err != nil {
-		panic(err)
+		println("========")
+		println("DB: NamedExec: ERROR:", err.Error())
+		println("========")
+		panic("INSERT CONTENT failed")
 	}
 	liid, _ := rslt.LastInsertId()
 	// naff, _ := rslt.RowsAffected()
