@@ -79,11 +79,6 @@ func (p *MmmcDB) GetContentAll() (pp []*ContentRecord) {
 func (p *MmmcDB) InsertContentRecord(pC *ContentRecord, pT *sqlx.Tx) (idx int, e error) {
 	var err error
 	var rslt sql.Result
-
-	// []string { "relfilepath", "absfilepath",
-	// 	"creatime", "meta_raw", "text_raw",
-	// 	"mimetype", "mtype", "roottag", "rootatts",
-	// 	"xmlcontype", "xmldoctype", "ditacontype" },
 	println("REL:", pC.RelFilePath)
 	println("ABS:", pC.AbsFilePath)
 	var s string
