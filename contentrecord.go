@@ -12,7 +12,8 @@ import (
 type ContentRecord struct {
 	Idx int // `db:"idx_content"`
 	Idx_Inbatch int
-	FU.Paths
+	RelFilePath string
+	FU.AbsFilePath
 	Times
 	Raw        string
 	Meta_raw   string
