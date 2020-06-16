@@ -10,7 +10,7 @@ import (
 // backup destination is a directory or has a permissions problem.
 // The current DB is renamed and so "disappears" from production.
 func (p *MmmcDB) MoveCurrentToBackup() error {
-	if !p.PathInfo.Exists {
+	if !p.PathInfo.Exists() {
 		println("    --> No current DB to move to backup")
 		return nil
 	}
@@ -30,7 +30,7 @@ func (p *MmmcDB) MoveCurrentToBackup() error {
 // backup destination is a directory or has a permissions problem.
 // The current DB is not affected.
 func (p *MmmcDB) DupeCurrentToBackup() error {
-	if !p.PathInfo.Exists {
+	if !p.PathInfo.Exists() {
 		println("    --> No current DB to duplicate to backup")
 		return nil
 	}
