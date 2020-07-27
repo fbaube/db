@@ -10,13 +10,15 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// ContentRecord is basically the content plus its "dead properties" -
+// properties that are set by the user, rather than dynamically determined.
 type ContentRecord struct {
 	Idx         int // `db:"idx_content"`
-	Idx_Inbatch int // NOTE: Maybe rename to FILESET. And, could be multiple! 
+	Idx_Inbatch int // NOTE: Maybe rename to FILESET. And, could be multiple!
 	RelFilePath string
 	FU.AbsFilePath
 	Times
-	Raw        string
+	Raw        string // The entire input file
 	MetaFormat string
 	MetaProps  SU.PropSet
 	Meta_raw   string
@@ -26,6 +28,9 @@ type ContentRecord struct {
 	//   into another table that FKEY's into this table.
 	// ExtlLinkRefs // links that point outside this File
 	// ExtlLinkDefs // link targets that are visible outside this File
+	// Linker = an outgoing link
+	// Linkee = the target of an outgoing link
+	// Linkable = a symbol that CAN be a Linkee
 }
 
 var TableSpec_Content = TableSpec{
