@@ -7,9 +7,11 @@ import (
 	"os"
 	FP "path/filepath"
 	S "strings"
-	MU "github.com/fbaube/miscutils"
+
 	FU "github.com/fbaube/fileutils"
+	MU "github.com/fbaube/miscutils"
 	"github.com/jmoiron/sqlx"
+
 	// to get init()
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -39,7 +41,7 @@ const DBNAME = "mmmc.db"
 
 // MmmcDB stores DB filepaths, DB cnxns, DB txns.
 type MmmcDB struct {
-	FU.PathInfo
+	FU.PathProps
 	// Connection
 	*sqlx.DB
 	// Session-level open Txn (if non-nil). Relevant API:
@@ -79,12 +81,12 @@ func NewMmmcDB(argpath string) (*MmmcDB, error) {
 	// pDB.DirrPath = *FU.NewBasicPath(relFP)
 	// if !pDB.DirrPath.IsOkayDir() { // PathType() != "DIR" {
 	// dp := FU.NewBasicPath(pDB.BasicPath.AbsFilePathParts.DirPath.S())
-	dp := FU.NewPathInfo(FP.Dir(pDB.PathInfo.AbsFP()))
+	dp := FU.NewPathProps(FP.Dir(pDB.PathProps.AbsFP()))
 	if !dp.IsOkayDir() {
 		retErr := MU.TracedError(fmt.Errorf("DB dir not exist or not a dir: %s", dp))
 		return nil, retErr
 	}
-	pDB.PathInfo = *FU.NewPathInfo(FP.Join(relFP, "mmmc.db"))
+	pDB.PathProps = *FU.NewPathProps(FP.Join(relFP, "mmmc.db"))
 	theDB = pDB
 	return pDB, nil
 }
@@ -94,7 +96,7 @@ func (p *MmmcDB) ForceExistDBandTables() {
 	if theDB == nil {
 		panic("db.forcexist.uninitd.L95")
 	}
-	var dest string = p.PathInfo.AbsFP() 
+	var dest string = p.PathProps.AbsFP()
 	// println("    --> Creating new DB at:", dest)
 	var e error
 	var theSqlDB *sql.DB

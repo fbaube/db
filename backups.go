@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"os"
+
 	FU "github.com/fbaube/fileutils"
 )
 
@@ -10,13 +11,13 @@ import (
 // backup destination is a directory or has a permissions problem.
 // The current DB is renamed and so "disappears" from production.
 func (p *MmmcDB) MoveCurrentToBackup() error {
-	if !p.PathInfo.Exists() {
+	if !p.PathProps.Exists() {
 		println("    --> No current DB to move to backup")
 		return nil
 	}
 	var cns = NowAsYMDHM()
-	var fromFP string = p.PathInfo.AbsFP()
-	var   toFP string = FU.AbsFilePath(p.PathInfo.AbsFP()).BaseName() + "-" + cns + ".db"
+	var fromFP string = p.PathProps.AbsFP()
+	var toFP string = FU.AbsFilePath(p.PathProps.AbsFP()).BaseName() + "-" + cns + ".db"
 	// func os.Rename(oldpath, newpath string) error
 	e := os.Rename(fromFP, toFP)
 	if e != nil {
@@ -30,13 +31,13 @@ func (p *MmmcDB) MoveCurrentToBackup() error {
 // backup destination is a directory or has a permissions problem.
 // The current DB is not affected.
 func (p *MmmcDB) DupeCurrentToBackup() error {
-	if !p.PathInfo.Exists() {
+	if !p.PathProps.Exists() {
 		println("    --> No current DB to duplicate to backup")
 		return nil
 	}
 	var cns = NowAsYMDHM()
-	var fromFP string = p.PathInfo.AbsFP()
-	var   toFP string = FU.AbsFilePath(p.PathInfo.AbsFP()).BaseName() + "-" + cns + ".db"
+	var fromFP string = p.PathProps.AbsFP()
+	var toFP string = FU.AbsFilePath(p.PathProps.AbsFP()).BaseName() + "-" + cns + ".db"
 
 	e := FU.CopyFromTo(fromFP, toFP)
 	if e != nil {
