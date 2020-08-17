@@ -109,7 +109,7 @@ func (p *MmmcDB) ForceExistDBandTables() {
 	checkerr(e)
 	e = theSqlDB.PingContext(context.Background())
 	checkerr(e)
-	println("    --> New DB created at:", dest)
+	println("    --> New DB created at:", FU.Tildotted(dest))
 	drivers := sql.Drivers()
 	fmt.Printf("    --> DB driver(s): %+v \n", drivers)
 	theDB.DB = sqlx.NewDb(theSqlDB, "sqlite3")
@@ -125,4 +125,9 @@ func (p *MmmcDB) ForceExistDBandTables() {
 	// It seems weird that this is necessary, but cos of some retro compatibility,
 	// SQLite does not by default enforce foreign key constraints.
 	mustExecStmt("PRAGMA foreign_keys = ON;")
+}
+
+func (p *MmmcDB) Verify() {
+	// PRAGMA integrity_check;
+	// PRAGMA foreign_key_check;
 }
