@@ -68,7 +68,7 @@ func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 		return pCR
 	}
 	pCR.AnalysisRecord = *pAR
-	println("D=> (B:NewCR)", pCR.String())
+	fmt.Printf("D=> (B:NewCR) %s \n", pCR.String())
 	return pCR
 }
 
