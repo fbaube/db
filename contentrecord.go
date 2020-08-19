@@ -47,9 +47,6 @@ func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 	var e error
 	pCR := new(ContentRecord)
 	pCR.PathProps = *pPP
-	// pCC.PathInfo = *pPI
-	// pCC.AbsFilePath = FU.AbsFilePath(pPI.AbsFP())
-	// pCC.RelFilePath = pPI.RelFP()
 
 	if (!pPP.Exists()) || pPP.IsOkayDir() || pPP.IsOkaySymlink() {
 		return pCR
