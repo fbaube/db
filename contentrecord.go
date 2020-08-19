@@ -27,8 +27,9 @@ type ContentRecord struct {
 	error
 	Idx         int // `db:"idx_content"`
 	Idx_Inbatch int // NOTE: Maybe rename to FILESET. And, could be multiple!
-	RelFilePath string
-	FU.AbsFilePath
+	FU.PathProps
+	// RelFilePath string
+	// FU.AbsFilePath
 	Times
 	ContentitySections
 	FU.AnalysisRecord
@@ -42,43 +43,44 @@ type ContentRecord struct {
 }
 
 // NewCheckedContent works for directories and symlinks too.
-func NewContentRecord(pPI *FU.PathProps) *ContentRecord {
+func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 	var e error
-	pCC := new(ContentRecord)
-
+	pCR := new(ContentRecord)
+	pCR.PathProps = *pPP
 	// pCC.PathInfo = *pPI
-	pCC.AbsFilePath = FU.AbsFilePath(pPI.AbsFP())
-	pCC.RelFilePath = pPI.RelFP()
+	// pCC.AbsFilePath = FU.AbsFilePath(pPI.AbsFP())
+	// pCC.RelFilePath = pPI.RelFP()
 
-	if pPI.IsOkayDir() || pPI.IsOkaySymlink() {
-		return pCC
+	if (!pPP.Exists()) || pPP.IsOkayDir() || pPP.IsOkaySymlink() {
+		return pCR
 	}
-	if !pPI.IsOkayFile() {
-		pCC.SetError(errors.New("Is not valid file, directory, or symlink"))
-		return pCC
+	if !pPP.IsOkayFile() {
+		pCR.SetError(errors.New("Is not valid file, directory, or symlink"))
+		return pCR
 	}
 	// OK, it's a file.
-	pCC.Raw, e = pPI.FetchContent()
+	pCR.Raw, e = pPP.FetchContent()
 	if e != nil {
-		pCC.SetError(errors.New("Could not fetch content"))
-		return pCC
+		pCR.SetError(fmt.Errorf("db.newCR: Cannot fetch content: %w", e))
+		return pCR
 	}
-	// pCC.BasicAnalysis.FileIsOkay = true
-	pBA, e := FU.AnalyseFile(pCC.Raw, FP.Ext(string(pPI.AbsFP())))
+	var pAR *FU.AnalysisRecord
+	pAR, e = FU.AnalyseFile(pCR.Raw, FP.Ext(string(pPP.AbsFP())))
 	if e != nil {
-		// panic(e)
-		pCC.SetError(fmt.Errorf("fu.CC: analyze file failed: %w", e))
-		return pCC
+		pCR.SetError(fmt.Errorf("fu.newCR: analyze file failed: %w", e))
+		return pCR
 	}
-	pCC.AnalysisRecord = *pBA
-	// println("NewCC OK!")
-	return pCC
+	pCR.AnalysisRecord = *pAR
+	println("D=> (B:NewCR)", pCR.String())
+	return pCR
 }
 
+/*
 func NewContentRecordFromPath(path string) *ContentRecord {
 	bp := FU.NewPathProps(path)
 	return NewContentRecord(bp)
 }
+*/
 
 var TableSpec_Content = TableSpec{
 	"content",
@@ -132,7 +134,7 @@ func (p *MmmcDB) GetContentAll() (pp []*ContentRecord) {
 func (p *MmmcDB) InsertContentRecord(pC *ContentRecord, pT *sqlx.Tx) (idx int, e error) {
 	var err error
 	var rslt sql.Result
-	println("REL:", pC.RelFilePath)
+	println("REL:", pC.RelFP)
 	println("ABS:", pC.AbsFilePath)
 	var s string
 	s = fmt.Sprintf(
@@ -148,7 +150,7 @@ func (p *MmmcDB) InsertContentRecord(pC *ContentRecord, pT *sqlx.Tx) (idx int, e
 			"\"%s\", \"%s\", "+
 			"\"%s\", \"%s\", \"%s\", \"%s\", "+
 			"\"%s\", \"%s\", \"%s\", \"%s\")",
-		pC.RelFilePath, pC.AbsFilePath,
+		pC.RelFP(), pC.AbsFilePath,
 		pC.Created, pC.Imported, pC.Edited,
 		pC.Meta_raw, pC.Text_raw,
 		pC.MimeType, pC.MType, pC.RootTag, pC.RootAtts,
