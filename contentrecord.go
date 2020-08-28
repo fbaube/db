@@ -77,13 +77,6 @@ func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 	return pCR
 }
 
-/*
-func NewContentRecordFromPath(path string) *ContentRecord {
-	bp := FU.NewPathProps(path)
-	return NewContentRecord(bp)
-}
-*/
-
 var TableSpec_Content = TableSpec{
 	"content",
 	[]string{"inbatch"}, // FK

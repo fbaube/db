@@ -51,7 +51,7 @@ func (p *MmmcDB) InsertInbatch(pIB *Inbatch) (idx int, e error) {
 	var err error
 	var rslt sql.Result
 	if pIB.FileCt == 0 { pIB.FileCt = 1 } // HACK
-	
+
 	tx := p.MustBegin()
 	s := "INSERT INTO INBATCH(" +
 		"descr, filect, creatime, relfilepath, absfilepath" +
@@ -71,17 +71,3 @@ func (p *MmmcDB) InsertInbatch(pIB *Inbatch) (idx int, e error) {
 	// fmt.Printf("    DD:InsertInbatch: ID=%d (nR=%d) \n", liid, naff)
 	return int(liid), nil
 }
-
-/*
-func (b Inbatch) Enmap() (map[string]int, map[string]string) {
-	iMap := make(map[string]int)
-	sMap := make(map[string]string)
-	iMap["inbatch_idx"] = b.Idx
-	iMap["filect"] = b.FileCt
-	sMap["descr"]  = b.Descr
-	sMap["creatime"] = b.Creatime
-	sMap["relfilepath"] = b.RelFilePath
-	sMap["absfilepath"] = b.AbsFilePath.S()
-	return iMap, sMap
-}
-*/

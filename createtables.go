@@ -16,18 +16,3 @@ var schemaTREF string = `TREF
  i_TPX integer not null references FILE,
  creatime text not null -- ISO-8601
   )`
-
-/*
-
-A LinkInfos has
-xmlIDs
-xmlIDrefs
-Conrefs
-Keyrefs
-Datarefs
-
-An XmlItems has
-- IDs & IDREFs
-- ENTITY & ELEMENT directives
-
-*/
