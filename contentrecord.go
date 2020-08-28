@@ -12,6 +12,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// ContentitySections is embedded in db.ContentRecord
 type ContentitySections struct {
 	Raw string // The entire input file
 	// Text_raw + Meta_raw = Raw (maybe plus surrounding tags)
@@ -40,6 +41,10 @@ type ContentRecord struct {
 	// Linker = an outgoing link
 	// Linkee = the target of an outgoing link
 	// Linkable = a symbol that CAN be a Linkee
+}
+
+func (p *ContentRecord) String() string {
+	return fmt.Sprintf("PP<%s> AR <%s>", p.PathProps.String(), p.AnalysisRecord.String())
 }
 
 // NewCheckedContent works for directories and symlinks too.
