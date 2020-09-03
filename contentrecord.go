@@ -8,19 +8,9 @@ import (
 	FP "path/filepath"
 
 	FU "github.com/fbaube/fileutils"
-	SU "github.com/fbaube/stringutils"
+	XM "github.com/fbaube/xmlmodels"
 	"github.com/jmoiron/sqlx"
 )
-
-// ContentitySections is embedded in db.ContentRecord
-type ContentitySections struct {
-	Raw string // The entire input file
-	// Text_raw + Meta_raw = Raw (maybe plus surrounding tags)
-	Text_raw   string
-	Meta_raw   string
-	MetaFormat string
-	MetaProps  SU.PropSet
-}
 
 // ContentRecord is basically the content plus its "dead properties" -
 // properties that are set by the user, rather than dynamically determined.
@@ -32,8 +22,7 @@ type ContentRecord struct {
 	// RelFilePath string
 	// FU.AbsFilePath
 	Times
-	ContentitySections
-	FU.AnalysisRecord
+	XM.AnalysisRecord
 	// For these next two fields, instead put the refs & defs
 	//   into another table that FKEY's into this table.
 	// ExtlLinkRefs // links that point outside this File
@@ -66,13 +55,16 @@ func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 		pCR.SetError(fmt.Errorf("db.newCR: Cannot fetch content: %w", e))
 		return pCR
 	}
-	var pAR *FU.AnalysisRecord
+	var pAR *XM.AnalysisRecord
 	pAR, e = FU.AnalyseFile(pCR.Raw, FP.Ext(string(pPP.AbsFP())))
 	if e != nil {
 		pCR.SetError(fmt.Errorf("fu.newCR: analyze file failed: %w", e))
 		return pCR
 	}
 	pCR.AnalysisRecord = *pAR
+	// SPLIT FILE!
+	fmt.Printf("==> db.nuCR: Root<%s> Meta<%s> Text<%s> \n",
+		pAR.RootElm.String(), pAR.MetaElm.String(), pAR.TextElm.String())
 	fmt.Printf("D=> (B:NewCR) %s \n", pCR.String())
 	return pCR
 }
@@ -148,7 +140,7 @@ func (p *MmmcDB) InsertContentRecord(pC *ContentRecord, pT *sqlx.Tx) (idx int, e
 		pC.RelFP(), pC.AbsFilePath,
 		pC.Created, pC.Imported, pC.Edited,
 		pC.Meta_raw, pC.Text_raw,
-		pC.MimeType, pC.MType, pC.RootTag, pC.RootAtts,
+		pC.MimeType, pC.MType, pC.RootElm.Name, pC.RootElm.Atts,
 		pC.XmlContype, pC.XmlDoctype, pC.DitaMarkupLg, pC.DitaContype)
 
 	println("EXEC:", s)
