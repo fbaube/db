@@ -19,8 +19,6 @@ type ContentRecord struct {
 	Idx         int // `db:"idx_content"`
 	Idx_Inbatch int // NOTE: Maybe rename to FILESET. And, could be multiple!
 	FU.PathProps
-	// RelFilePath string
-	// FU.AbsFilePath
 	Times
 	XM.AnalysisRecord
 	// For these next two fields, instead put the refs & defs
@@ -141,7 +139,7 @@ func (p *MmmcDB) InsertContentRecord(pC *ContentRecord, pT *sqlx.Tx) (idx int, e
 		pC.Created, pC.Imported, pC.Edited,
 		pC.Meta_raw, pC.Text_raw,
 		pC.MimeType, pC.MType, pC.RootElm.Name, pC.RootElm.Atts,
-		pC.XmlContype, pC.XmlDoctype, pC.DitaMarkupLg, pC.DitaContype)
+		pC.XmlContype, pC.Doctype, pC.DitaMarkupLg, pC.DitaContype)
 
 	println("EXEC:", s)
 
