@@ -61,8 +61,15 @@ func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 	}
 	pCR.AnalysisRecord = *pAR
 	// SPLIT FILE!
-	fmt.Printf("==> db.nuCR: Root<%s> Meta<%s> Text<%s> \n",
-		pAR.RootElm.String(), pAR.MetaElm.String(), pAR.TextElm.String())
+	if !pAR.KeyElms.HasNone() {
+		fmt.Printf("==> db.nuCR: Root<%s> Meta<%s> Text<%s> \n",
+			pAR.RootElm.String(), pAR.MetaElm.String(), pAR.TextElm.String())
+	} else if pAR.FileType() == "MKDN" {
+		pAR.KeyElms.SetToAllText()
+		println("MKDN is all text, but what about the Extent fields?")
+	} else {
+		fmt.Printf("==> db.nuCR: found no key elms (root,meta,text) \n")
+	}
 	fmt.Printf("D=> (B:NewCR) %s \n", pCR.String())
 	return pCR
 }
