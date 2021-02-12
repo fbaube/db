@@ -40,14 +40,19 @@ func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 	pCR := new(ContentRecord)
 	pCR.PathProps = *pPP
 
-	if (!pPP.Exists()) || pPP.IsOkayDir() || pPP.IsOkaySymlink() {
+	if !pPP.Exists() {
+		pCR.SetError(errors.New("Does not exist"))
+		return pCR
+	}
+	if pPP.IsOkayDir() || pPP.IsOkaySymlink() {
+		pCR.SetError(errors.New("Is directory or symlink"))
 		return pCR
 	}
 	if !pPP.IsOkayFile() {
-		pCR.SetError(errors.New("Is not valid file, directory, or symlink"))
+		pCR.SetError(errors.New("Is not valid file"))
 		return pCR
 	}
-	// OK, it's a file.
+	// OK, it's a valis file.
 	pCR.Raw, e = pPP.FetchContent()
 	if e != nil {
 		pCR.SetError(fmt.Errorf("db.newCR: Cannot fetch content: %w", e))
@@ -62,8 +67,8 @@ func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 	pCR.AnalysisRecord = *pAR
 	// SPLIT FILE!
 	if !pAR.KeyElms.HasNone() {
-		fmt.Printf("==> db.nuCR: Root<%s> Meta<%s> Text<%s> \n",
-			pAR.RootElm.String(), pAR.MetaElm.String(), pAR.TextElm.String())
+		fmt.Printf("==> Key elm triplet: Root<%s> Meta<%s> Text<%s> \n",
+			pAR.KeyElmsWithRanges.RootElm.String(), pAR.MetaElm.String(), pAR.TextElm.String())
 	} else if pAR.FileType() == "MKDN" {
 		pAR.KeyElms.SetToAllText()
 		println("MKDN is all text, but what about the Extent fields?")
