@@ -55,23 +55,27 @@ func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 	// OK, it's a valis file.
 	pCR.Raw, e = pPP.FetchContent()
 	if e != nil {
+		println("==> db.newCR: Cannot fetch content", e.Error())
 		pCR.SetError(fmt.Errorf("db.newCR: Cannot fetch content: %w", e))
 		return pCR
 	}
 	var pAR *XM.AnalysisRecord
 	pAR, e = FU.AnalyseFile(pCR.Raw, FP.Ext(string(pPP.AbsFP())))
 	if e != nil {
+		println("==> db.newCR: analyze file failed:", e.Error())
 		pCR.SetError(fmt.Errorf("fu.newCR: analyze file failed: %w", e))
 		return pCR
 	}
 	pCR.AnalysisRecord = *pAR
 	// SPLIT FILE!
-	if !pAR.KeyElms.HasNone() {
+	if !pAR.ContentityStructure.HasNone() {
 		fmt.Printf("==> Key elm triplet: Root<%s> Meta<%s> Text<%s> \n",
-			pAR.KeyElmsWithRanges.RootElm.String(), pAR.MetaElm.String(), pAR.TextElm.String())
+			pAR.ContentityStructure.Root.String(),
+			pAR.ContentityStructure.Meta.String(),
+			pAR.ContentityStructure.Text.String())
 	} else if pAR.FileType() == "MKDN" {
-		pAR.KeyElms.SetToAllText()
-		println("MKDN is all text, but what about the Extent fields?")
+		// pAR.KeyElms.SetToAllText()
+		println("!!> Gotta set MKDN all text, but what about the Extent fields?")
 	} else {
 		fmt.Printf("==> db.nuCR: found no key elms (root,meta,text) \n")
 	}
@@ -149,8 +153,8 @@ func (p *MmmcDB) InsertContentRecord(pC *ContentRecord, pT *sqlx.Tx) (idx int, e
 			"\"%s\", \"%s\", \"%s\", \"%s\")",
 		pC.RelFP(), pC.AbsFilePath,
 		pC.Created, pC.Imported, pC.Edited,
-		pC.Meta_raw, pC.Text_raw,
-		pC.MimeType, pC.MType, pC.RootElm.Name, pC.RootElm.Atts,
+		pC.MetaRaw(), pC.TextRaw(),
+		pC.MimeType, pC.MType, pC.Root.Name, pC.Root.Atts,
 		pC.XmlContype, pC.Doctype, pC.DitaMarkupLg, pC.DitaContype)
 
 	println("EXEC:", s)
