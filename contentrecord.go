@@ -34,7 +34,7 @@ func (p *ContentRecord) String() string {
 	return fmt.Sprintf("PP<%s> AR <%s>", p.PathProps.String(), p.AnalysisRecord.String())
 }
 
-// NewCheckedContent works for directories and symlinks too.
+// NewContentRecord works for directories and symlinks too.
 func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 	var e error
 	pCR := new(ContentRecord)

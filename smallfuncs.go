@@ -10,14 +10,14 @@ func checkerr(e error) {
 func mustExecStmt(s string) {
 	stmt, e = theDB.DB.Prepare(s)
 	checkerr(e)
-	_,e := stmt.Exec() // rslt,e := ...
+	_, e := stmt.Exec() // rslt,e := ...
 	checkerr(e)
 	// liid, _ := rslt.LastInsertId()
 	// naff, _ := rslt.RowsAffected()
 	// fmt.Printf("DD:mustExecStmt: ID %d nR %d \n", liid, naff)
 }
 
-// MustCreateTable makes sure it exists but
+// MustExistTable makes sure it exists but
 // does NOT drop an already-existing table.
 func MustExistTable(s string) {
 	println("db.MustExistTable: WTH: ", s)

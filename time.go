@@ -24,11 +24,11 @@ func Ito09az(i int) string {
 func NowAsYMDHM() string {
 	var now = time.Now()
 	// year = last digit
-	var y string = fmt.Sprintf("%d", now.Year())[3:]
-	var m string = Ito09az(int(now.Month()))
-	var d string = Ito09az(now.Day())
-	var h string = Ito09az(now.Hour())
-	var n string = Ito09az(now.Minute() / 2)
+	var y = fmt.Sprintf("%d", now.Year())[3:]
+	var m = Ito09az(int(now.Month()))
+	var d = Ito09az(now.Day())
+	var h = Ito09az(now.Hour())
+	var n = Ito09az(now.Minute() / 2)
 	// fmt.Printf("%s-%s-%s-%s-%s", y, m, d, h, n)
 	return fmt.Sprintf("%s%s%s%s%s", y, m, d, h, n)
 }
@@ -38,8 +38,8 @@ func NowAsYMDHM() string {
 func NowAsYM() string {
 	var now = time.Now()
 	// year = last digit
-	var y string = fmt.Sprintf("%d", now.Year())[3:]
-	var m string = Ito09az(int(now.Month()))
+	var y = fmt.Sprintf("%d", now.Year())[3:]
+	var m = Ito09az(int(now.Month()))
 	// fmt.Printf("%s-%s-%s-%s-%s", y, m, d, h, n)
 	return fmt.Sprintf("%s%s", y, m)
 }
