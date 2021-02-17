@@ -75,11 +75,11 @@ func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 			pAR.ContentityStructure.Text.String())
 	} else if pAR.FileType() == "MKDN" {
 		// pAR.KeyElms.SetToAllText()
-		println("!!> Gotta set MKDN all text, but what about the Extent fields?")
+		println("--> TODO set MKDN all text, and ranges")
 	} else {
 		fmt.Printf("==> db.nuCR: found no key elms (root,meta,text) \n")
 	}
-	fmt.Printf("D=> (B:NewCR) %s \n", pCR.String())
+	// fmt.Printf("D=> NewCR: %s \n", pCR.String())
 	return pCR
 }
 
