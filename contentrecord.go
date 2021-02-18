@@ -35,6 +35,7 @@ func (p *ContentRecord) String() string {
 }
 
 // NewContentRecord works for directories and symlinks too.
+// It used to SetError(..), but no longer does.
 func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 	var e error
 	pCR := new(ContentRecord)
@@ -45,14 +46,15 @@ func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 		return pCR
 	}
 	if pPP.IsOkayDir() || pPP.IsOkaySymlink() {
-		pCR.SetError(errors.New("Is directory or symlink"))
+		// COMMENTING THIS OUT IS A FIX
+		// pCR.SetError(errors.New("Is directory or symlink"))
 		return pCR
 	}
 	if !pPP.IsOkayFile() {
 		pCR.SetError(errors.New("Is not valid file"))
 		return pCR
 	}
-	// OK, it's a valis file.
+	// OK, it's a valid file.
 	pCR.Raw, e = pPP.FetchContent()
 	if e != nil {
 		println("==> db.newCR: Cannot fetch content", e.Error())
