@@ -8,6 +8,7 @@ import (
 	FP "path/filepath"
 
 	FU "github.com/fbaube/fileutils"
+	L "github.com/fbaube/mlog"
 	XM "github.com/fbaube/xmlmodels"
 	"github.com/jmoiron/sqlx"
 )
@@ -71,15 +72,15 @@ func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 	pCR.AnalysisRecord = *pAR
 	// SPLIT FILE!
 	if !pAR.ContentityStructure.HasNone() {
-		fmt.Printf("==> Key elm triplet: Root<%s> Meta<%s> Text<%s> \n",
+		L.L.Success("Key elm triplet: Root<%s> Meta<%s> Text<%s>",
 			pAR.ContentityStructure.Root.String(),
 			pAR.ContentityStructure.Meta.String(),
 			pAR.ContentityStructure.Text.String())
 	} else if pAR.FileType() == "MKDN" {
 		// pAR.KeyElms.SetToAllText()
-		println("--> TODO set MKDN all text, and ranges")
+		L.L.Warning("TODO set MKDN all text, and ranges")
 	} else {
-		fmt.Printf("==> db.nuCR: found no key elms (root,meta,text) \n")
+		L.L.Dbg("db.nuCR: found no key elms (root,meta,text) \n")
 	}
 	// fmt.Printf("D=> NewCR: %s \n", pCR.String())
 	return pCR
