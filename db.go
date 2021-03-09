@@ -3,13 +3,13 @@ package db
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	FP "path/filepath"
 	S "strings"
 
 	FU "github.com/fbaube/fileutils"
-	MU "github.com/fbaube/miscutils"
 	"github.com/jmoiron/sqlx"
 
 	// to get init()
@@ -83,8 +83,10 @@ func NewMmmcDB(argpath string) (*MmmcDB, error) {
 	// dp := FU.NewBasicPath(pDB.BasicPath.AbsFilePathParts.DirPath.S())
 	dp := FU.NewPathProps(FP.Dir(pDB.PathProps.AbsFP()))
 	if !dp.IsOkayDir() {
-		retErr := MU.TracedError(fmt.Errorf("DB dir not exist or not a dir: %s", dp))
-		return nil, retErr
+		// retErr := MU.TracedError(fmt.Errorf("DB dir not exist or not a dir: %s", dp))
+		retErr := "DB dir not exist or not a dir: " + dp.String()
+		println(retErr)
+		return nil, errors.New(retErr)
 	}
 	pDB.PathProps = *FU.NewPathProps(FP.Join(relFP, "mmmc.db"))
 	theDB = pDB
