@@ -72,7 +72,7 @@ func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 	pCR.AnalysisRecord = *pAR
 	// SPLIT FILE!
 	if !pAR.ContentityStructure.HasNone() {
-		L.L.Success("Key elm triplet: Root<%s> Meta<%s> Text<%s>",
+		L.L.Okay("Key element triplet: Root<%s> Meta<%s> Text<%s>",
 			pAR.ContentityStructure.Root.String(),
 			pAR.ContentityStructure.Meta.String(),
 			pAR.ContentityStructure.Text.String())
@@ -80,7 +80,7 @@ func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 		// pAR.KeyElms.SetToAllText()
 		L.L.Warning("TODO set MKDN all text, and ranges")
 	} else {
-		L.L.Dbg("db.nuCR: found no key elms (root,meta,text) \n")
+		L.L.Warning("Found no key elms (root,meta,text)")
 	}
 	// fmt.Printf("D=> NewCR: %s \n", pCR.String())
 	return pCR
