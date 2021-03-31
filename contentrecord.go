@@ -86,11 +86,24 @@ func NewContentRecord(pPP *FU.PathProps) *ContentRecord {
 	return pCR
 }
 
+/*
+type TableSpec struct {
+	tableName string
+	forenKeys []string
+	intFields []string
+	intRanges []int // save to DBrec[0] // -1, 0, 1
+	strFields []string
+	strDescrs []string // save to DBrec[0]
+} */
+
 var TableSpec_Content = TableSpec{
 	"content",
-	[]string{"inbatch"}, // FK
-	nil,                 // intFields
-	nil,                 // intRanges
+	// One foreign key
+	[]string{"inbatch"},
+	// No int fields
+	nil,
+	nil,
+	// Fifteen string fields
 	[]string{
 		"relfilepath", "absfilepath", // Paths
 		"created", "imported", "edited", // Times
@@ -156,7 +169,7 @@ func (p *MmmcDB) InsertContentRecord(pC *ContentRecord, pT *sqlx.Tx) (idx int, e
 			"\"%s\", \"%s\", \"%s\", \"%s\")",
 		pC.RelFP(), pC.AbsFilePath,
 		pC.Created, pC.Imported, pC.Edited,
-		pC.MetaRaw(), pC.TextRaw(),
+		pC.GetSpan(pC.Meta), pC.GetSpan(pC.Text),
 		pC.MimeType, pC.MType, pC.Root.Name, pC.Root.Atts,
 		pC.XmlContype, pC.Doctype, pC.DitaMarkupLg, pC.DitaContype)
 

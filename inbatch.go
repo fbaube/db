@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+
 	FU "github.com/fbaube/fileutils"
 )
 
@@ -13,19 +14,32 @@ type Inbatch struct {
 	FileCt      int
 	RelFilePath string
 	AbsFilePath FU.AbsFilePath `db:"absfilepath"` // necessary ceremony
-	Creatime    string // RFC 3339
+	Creatime    string         // RFC 3339
 	Descr       string
 }
 
-var TableSpec_Inbatch = TableSpec {
-   "inbatch",
-    nil,     // no foreign keys
-    []string { "filect" },
-    []int    {  1  },  // >=1
-    []string { "relfilepath", "absfilepath", "creatime", "descr" },
-    []string { "Rel.FP (from CLI)", "Absolute filepath",
-               "Creation date+time", "Batch description" },
-		}
+/*
+type TableSpec struct {
+	tableName string
+	forenKeys []string
+	intFields []string
+	intRanges []int // save to DBrec[0] // -1, 0, 1
+	strFields []string
+	strDescrs []string // save to DBrec[0]
+} */
+
+var TableSpec_Inbatch = TableSpec{
+	"inbatch",
+	// no foreign keys
+	nil,
+	// One int field
+	[]string{"filect"},
+	[]int{1}, // >=1
+	// Four string fields
+	[]string{"relfilepath", "absfilepath", "creatime", "descr"},
+	[]string{"Rel.FP (from CLI)", "Absolute filepath",
+		"Creation date+time", "Batch description"},
+}
 
 // GetInbatchesAll gets all input batches in the system.
 func (p *MmmcDB) GetInbatchesAll() (pp []*Inbatch) {
@@ -50,7 +64,9 @@ func (p *MmmcDB) GetInbatchesAll() (pp []*Inbatch) {
 func (p *MmmcDB) InsertInbatch(pIB *Inbatch) (idx int, e error) {
 	var err error
 	var rslt sql.Result
-	if pIB.FileCt == 0 { pIB.FileCt = 1 } // HACK
+	if pIB.FileCt == 0 {
+		pIB.FileCt = 1
+	} // HACK
 
 	tx := p.MustBegin()
 	s := "INSERT INTO INBATCH(" +
