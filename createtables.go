@@ -14,5 +14,5 @@ var schemasALL = []string{
 var schemaTREF = `TREF
 (i_MAP integer not null references FILE,
  i_TPX integer not null references FILE,
- creatime text not null -- ISO-8601
+ t_cre text not null -- ISO-8601
   )`

@@ -119,10 +119,8 @@ func (p *MmmcDB) ForceExistDBandTables() {
 	for _, s := range schemasALL {
 		mustExecStmt("CREATE TABLE IF NOT EXISTS " + s)
 	}
-	// p.CreateTable_Inbatch_sqlite()
-	// p.CreateTable_Content_sqlite()
-	p.CreateTable_sqlite(TableSpec_Inbatch)
-	p.CreateTable_sqlite(TableSpec_Content)
+	p.CreateTable_sqlite(TableConfig_Inbatch)
+	p.CreateTable_sqlite(TableConfig_Contentity)
 
 	// It seems weird that this is necessary, but cos of some retro compatibility,
 	// SQLite does not by default enforce foreign key constraints.

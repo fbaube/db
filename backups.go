@@ -21,7 +21,7 @@ func (p *MmmcDB) MoveCurrentToBackup() error {
 	// func os.Rename(oldpath, newpath string) error
 	e := os.Rename(fromFP, toFP)
 	if e != nil {
-		return fmt.Errorf("Can't move current DB to <%s>: %w: ", toFP, e)
+		return fmt.Errorf("can't move current DB to <%s>: %w: ", toFP, e)
 	}
 	println("    --> Old DB moved to:", toFP)
 	return nil
@@ -41,7 +41,7 @@ func (p *MmmcDB) DupeCurrentToBackup() error {
 
 	e := FU.CopyFromTo(fromFP, toFP)
 	if e != nil {
-		return fmt.Errorf("Can't copy current DB to <%s>: %w: ", toFP, e)
+		return fmt.Errorf("can't copy current DB to <%s>: %w: ", toFP, e)
 	}
 	println("    --> Old DB copied to backup at:", toFP)
 	return nil

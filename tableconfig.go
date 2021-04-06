@@ -15,10 +15,7 @@ package db
 //  - INTEGER as Unix time: the seconds count since 1970-01-01 00:00:00 UTC.
 //
 type TableSpec struct {
-	tableName string
-	forenKeys []string
-	intFields []string
-	intRanges []int // save to DBrec[0] // -1, 0, 1
-	strFields []string
-	strDescrs []string // save to DBrec[0]
+	TableName string
+	ForenKeys []string
+	Columns   []DbColSpec
 }
