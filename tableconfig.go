@@ -1,6 +1,6 @@
 package db
 
-// TableSpec assumes that when specifying the column types for a DB table,
+// TableConfig assumes that when specifying the column types for a DB table,
 // it is enough to use strings and integers. Also a primary key is assumed
 // and foreign keys are allowed. Any field can be nil, except the first
 // (tableName). Obviously the two fields "int*" should be the same length,
@@ -14,7 +14,7 @@ package db
 //  - REAL as Julian day numbers: the day count since 24 November 4714 BC.
 //  - INTEGER as Unix time: the seconds count since 1970-01-01 00:00:00 UTC.
 //
-type TableSpec struct {
+type TableConfig struct {
 	TableName string
 	ForenKeys []string
 	Columns   []DbColSpec
