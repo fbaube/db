@@ -2,49 +2,53 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
-	"log"
+	"time"
 
+	L "github.com/fbaube/mlog"
 	"github.com/jmoiron/sqlx"
 )
 
-// GetInbatchesAll gets all input batches in the system.
-func (p *MmmcDB) GetInbatchesAll() (pp []*Inbatch) {
-	pp = make([]*Inbatch, 0, 16)
-	rows, err := p.DB.Queryx("SELECT * FROM INBATCH")
-	if err != nil {
-		panic("GetInbatchesAll")
+// GetAll_Inbatch gets all input batches in the system.
+func (p *MmmcDB) GetAll_Inbatch() (pp []*Inbatch) {
+	var rowsx *sqlx.Rows
+	var e error
+	rowsx, e = p.DB.Queryx("SELECT * FROM INBATCH")
+	if e != nil {
+		L.L.Error("DB.GetAll_Inbatch: %w", e)
+		return nil
 	}
-	for rows.Next() {
+	pp = make([]*Inbatch, 0, 16)
+	for rowsx.Next() {
 		p := new(Inbatch)
-		err := rows.StructScan(p)
-		if err != nil {
-			log.Fatalln(err)
+		e = rowsx.StructScan(p)
+		if e != nil {
+			L.L.Error("DB.GetAll_Inbatch.StructScan: %w", e)
 		}
-		fmt.Printf("    DD:%#v\n", *p)
+		L.L.Dbg("Got Inbatch: %+v", *p)
 		pp = append(pp, p)
 	}
 	return pp
 }
 
-// InsertInbatch adds an input batch to the system.
-func (p *MmmcDB) InsertInbatch(pIB *Inbatch) (idx int, e error) {
-	var err error
+// Add_Inbatch adds an input batch to the DB and returns its primary index.
+func (p *MmmcDB) Add_Inbatch(pIB *Inbatch) (int, error) {
 	var rslt sql.Result
+	var e error
 	if pIB.FilCt == 0 {
 		pIB.FilCt = 1
 	} // HACK
 
+	pIB.T_Cre = time.Now().UTC().Format(time.RFC3339)
 	tx := p.MustBegin()
 	s := "INSERT INTO INBATCH(" +
 		"descr, filct, t_cre, relfp, absfp" +
 		") VALUES(" +
 		":descr, :filct, :t_cre, :relfp, :absfp)" // " RETURNING i_INB", p)
-	rslt, err = tx.NamedExec(s, pIB)
+	rslt, e = tx.NamedExec(s, pIB)
 	tx.Commit()
 	println("=== ### ===")
-	if err != nil {
-		panic(err)
+	if e != nil {
+		L.L.Error("DB.Add_Inbatch: %w", e)
 	}
 	/*
 			Query(...) (*sql.Rows, error) - unchanged
@@ -67,52 +71,12 @@ func (p *MmmcDB) InsertInbatch(pIB *Inbatch) (idx int, e error) {
 	// otherwise it will use the default.
 	// ============
 
-	db := p.DB
-	// var err error
-	// func TestInbatch(rows sql.Rows, S *Inbatch)
 	var egInb = Inbatch{}
+	var rowsx *sqlx.Rows
+	rowsx, e = p.DB.Queryx("SELECT * FROM INBATCH")
+	TestInbatch(rowsx, &egInb)
 
-	rows, err := db.Query("SELECT * FROM INBATCH")
-	fmt.Printf("rows: %+v \n", rows)
-	TestInbatch(rows, &egInb)
-	sqlx.StructScan(rows, &egInb)
-	fmt.Printf("StructScan got: %+v \n", egInb)
-	println("=== ### ===")
-
-	rowsx, err := db.Queryx("SELECT * FROM INBATCH")
-	fmt.Printf("rowsx: %+v \n", rowsx)
-	TestInbatch(rows, &egInb)
-	println("=== ### ===")
-	for rowsx.Next() {
-		var inb1 Inbatch
-		err = rowsx.StructScan(&inb1)
-	}
-	rrow := db.QueryRow("SELECT * FROM INBATCH")
-	fmt.Printf("rrow: %+v \n", rrow)
-	println("=== ### ===")
-	var inb2 Inbatch
-	err = rrow.Scan(&inb2) // could chain this
-
-	rrowx := db.QueryRowx("SELECT * FROM INBATCH")
-	fmt.Printf("rrowx: %+v \n", rrowx)
-	println("=== ### ===")
-	var inb3 Inbatch
-	err = rrowx.Scan(&inb3) // could chain this
-
-	inb4 := Inbatch{}
-	inb4s := []Inbatch{}
-
-	// this will pull the first place directly into p
-	err = db.Get(&inb4, "SELECT * FROM INBATCH LIMIT 1")
-	fmt.Printf("inb4: %+v \n", inb4)
-	println("=== ### ===")
-
-	// this will pull places with telcode > 50 into the slice pp
-	err = db.Select(&inb4s, "SELECT * FROM INBATCH")
-	fmt.Printf("inb4s: %+v \n", inb4s)
-	println("=== ### ===")
-
-	// ============
+	// WORK HERE
 
 	println("NEED: RETURNING (inbatch ID)")
 	liid, err := rslt.LastInsertId()

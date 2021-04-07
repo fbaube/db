@@ -36,14 +36,14 @@ func NewContentityRecord(pPP *FU.PathProps) *ContentityRecord {
 	// OK, it's a valid file.
 	pCR.Raw, e = pPP.FetchContent()
 	if e != nil {
-		println("==> db.newCR: Cannot fetch content", e.Error())
-		pCR.SetError(fmt.Errorf("db.newCR: Cannot fetch content: %w", e))
+		L.L.Error("DB.newCnty: cannot fetch content: " + e.Error())
+		pCR.SetError(fmt.Errorf("DB.newCnty: cannot fetch content: %w", e))
 		return pCR
 	}
 	var pAR *XM.AnalysisRecord
 	pAR, e = FU.AnalyseFile(pCR.Raw, FP.Ext(string(pPP.AbsFP())))
 	if e != nil {
-		println("==> db.newCR: analyze file failed:", e.Error())
+		L.L.Error("DB.newCnty: analyze file failed: " + e.Error())
 		pCR.SetError(fmt.Errorf("fu.newCR: analyze file failed: %w", e))
 		return pCR
 	}
@@ -90,14 +90,14 @@ func (p *MmmcDB) GetContentityAll() (pp []*ContentityRecord) {
 func (p *MmmcDB) InsertContentityRecord(pC *ContentityRecord, pT *sqlx.Tx) (idx int, e error) {
 	var err error
 	var rslt sql.Result
-	println("REL:", pC.RelFP)
-	println("ABS:", pC.AbsFilePath)
+	println("REL:", pC.RelFP())
+	println("ABS:", pC.AbsFP())
 	var s string
 	s = fmt.Sprintf(
 		"INSERT INTO CONTENTITY("+
-			"relfilepath, absfilepath, "+
-			"created, imported, edited, "+
-			"meta_raw, text_raw, "+
+			"relfp, absfp, "+
+			"t_cre, t_imp, t_edt, "+
+			"metaraw, textraw, "+
 			"mimetype, mtype, roottag, rootatts, "+
 			"xmlcontype, xmldoctype, ditaflavor, ditacontype"+
 			") VALUES("+
@@ -106,7 +106,7 @@ func (p *MmmcDB) InsertContentityRecord(pC *ContentityRecord, pT *sqlx.Tx) (idx 
 			"\"%s\", \"%s\", "+
 			"\"%s\", \"%s\", \"%s\", \"%s\", "+
 			"\"%s\", \"%s\", \"%s\", \"%s\")",
-		pC.RelFP(), pC.AbsFilePath,
+		pC.RelFP(), pC.AbsFP(),
 		pC.Created, pC.Imported, pC.Edited,
 		pC.GetSpan(pC.Meta), pC.GetSpan(pC.Text),
 		pC.MimeType, pC.MType, pC.Root.Name, pC.Root.Atts,

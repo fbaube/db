@@ -1,10 +1,12 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
 	FU "github.com/fbaube/fileutils"
+	L "github.com/fbaube/mlog"
 )
 
 // MoveCurrentToBackup makes a best effort but can fail if the
@@ -12,7 +14,7 @@ import (
 // The current DB is renamed and so "disappears" from production.
 func (p *MmmcDB) MoveCurrentToBackup() error {
 	if !p.PathProps.Exists() {
-		println("    --> No current DB to move to backup")
+		L.L.Info("No current DB to move to backup")
 		return nil
 	}
 	var cns = NowAsYMDHM()
@@ -21,9 +23,11 @@ func (p *MmmcDB) MoveCurrentToBackup() error {
 	// func os.Rename(oldpath, newpath string) error
 	e := os.Rename(fromFP, toFP)
 	if e != nil {
-		return fmt.Errorf("can't move current DB to <%s>: %w: ", toFP, e)
+		reterr := fmt.Sprintf("can't move current DB to <%s>: %w", toFP, e)
+		L.L.Error(reterr)
+		return errors.New(reterr)
 	}
-	println("    --> Old DB moved to:", toFP)
+	L.L.Progress("Old DB moved to: " + toFP)
 	return nil
 }
 
@@ -32,7 +36,7 @@ func (p *MmmcDB) MoveCurrentToBackup() error {
 // The current DB is not affected.
 func (p *MmmcDB) DupeCurrentToBackup() error {
 	if !p.PathProps.Exists() {
-		println("    --> No current DB to duplicate to backup")
+		L.L.Info("No current DB to duplicate to backup")
 		return nil
 	}
 	var cns = NowAsYMDHM()
@@ -41,8 +45,10 @@ func (p *MmmcDB) DupeCurrentToBackup() error {
 
 	e := FU.CopyFromTo(fromFP, toFP)
 	if e != nil {
-		return fmt.Errorf("can't copy current DB to <%s>: %w: ", toFP, e)
+		reterr := fmt.Sprintf("Can't copy current DB to <%s>: %w: ", toFP, e)
+		L.L.Error(reterr)
+		return errors.New(reterr)
 	}
-	println("    --> Old DB copied to backup at:", toFP)
+	L.L.Info("Old DB copied to backup at: " + toFP)
 	return nil
 }

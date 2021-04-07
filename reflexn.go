@@ -1,17 +1,18 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
 	"reflect"
+
+	"github.com/jmoiron/sqlx"
 )
 
 // rows, _ := db.Query("select * from inbatch;")
-func TestInbatch(rows *sql.Rows, S *Inbatch) {
+func TestInbatch(rowsx *sqlx.Rows, S *Inbatch) {
 
 	// Set up data structures for DB row
-	columns, _ := rows.Columns()
-	colTypes, _ := rows.ColumnTypes()
+	columns, _ := rowsx.Columns()
+	colTypes, _ := rowsx.ColumnTypes()
 	colCount := len(columns)
 	colValues := make([]interface{}, colCount)
 	colValPtrs := make([]interface{}, colCount)

@@ -6,16 +6,15 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// CheckColumns seems to do some kind of checking
-// on the columns in the specified table.
-func (p *MmmcDB) CheckColumns(tableName string) {
+// TryColumns tries some sqlx stuff.
+func (p *MmmcDB) TryColumns(tableName string) {
 	var e error
 	var rows *sqlx.Rows
 	var cols []interface{}
 
 	rows, e = p.DB.Queryx("SELECT * FROM " + tableName + " LIMIT 1")
 	if e != nil {
-		fmt.Printf("==> CheckColumns-1 failed: %v \n", e)
+		fmt.Printf("==> TryColumns-1 failed: %v \n", e)
 		return
 	}
 	n := 0

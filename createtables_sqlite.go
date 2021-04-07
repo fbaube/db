@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	S "strings"
 
+	L "github.com/fbaube/mlog"
 	SB "github.com/fbaube/semblox"
 )
 
@@ -70,15 +72,23 @@ func (pDB *MmmcDB) CreateTable_sqlite(ts TableConfig) {
 			CTS += "foreign key(idx_" + tbl + ") references " + tbl + "(idx_" + tbl + "), \n"
 		}
 	}
+
 	CTS = S.TrimSuffix(CTS, "\n")
 	CTS = S.TrimSuffix(CTS, " ")
 	CTS = S.TrimSuffix(CTS, ",")
 	CTS += "\n);"
-	println("= = = = = = = = \n", CTS, "= = = = = = = =")
+
+	fnam := "./create-table-" + ts.TableName + ".sql"
+	e := ioutil.WriteFile(fnam, []byte(CTS), 0644)
+	if e != nil {
+		L.L.Error("Could not write file: " + fnam)
+	} else {
+		L.L.Dbg("Wrote \"CREATE TABLE " + ts.TableName + " ... \" to: " + fnam)
+	}
 	pDB.DB.MustExec(CTS)
 	pDB.DumpTableSchema_sqlite(ts.TableName, os.Stdout)
-	println("TODO: Insert record with IDX 0 and string descr's")
-	println("TODO: Dump all table records (i.e. just one)")
+	// println("TODO: Insert record with IDX 0 and string descr's")
+	//    and ("TODO: Dump all table records (i.e. just one)")
 }
 
 func (pDB *MmmcDB) DbTblColsIRL(tableName string) []*DbColIRL {
@@ -113,7 +123,13 @@ func (pDB *MmmcDB) DumpTableSchema_sqlite(tableName string, w io.Writer) {
 	var theCols []*DbColIRL
 	theCols = pDB.DbTblColsIRL(tableName)
 
+	var sType string
 	for i, c := range theCols {
-		fmt.Fprintf(w, "col[%d]: %s \n", i, *c)
+		sType = ""
+		if c.TxtIntKeyEtc != "text" {
+			sType = string(c.TxtIntKeyEtc) + "!:"
+		}
+		fmt.Fprintf(w, "[%d]%s%s / ", i, sType, c.Code)
 	}
+	fmt.Fprintf(w, "%d fields \n", len(theCols))
 }

@@ -4,12 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"os"
 	FP "path/filepath"
 	S "strings"
 
 	FU "github.com/fbaube/fileutils"
+	L "github.com/fbaube/mlog"
+	WU "github.com/fbaube/wasmutils"
 	"github.com/jmoiron/sqlx"
 
 	// to get init()
@@ -62,30 +63,30 @@ var rslt *sql.Result
 var e error
 
 // NewMmmcDB initializes path-related variables but does not do more.
-// argpath can be a relative path passed to the CLI;
-// if it is "", the DB path is set to the CWD (current
-// working directory).
+// argpath can be a relative path passed to the CLI; if it is "",
+// the DB path is set to the CWD (current working directory).
 func NewMmmcDB(argpath string) (*MmmcDB, error) {
-	pDB := new(MmmcDB)
-	if argpath == "" {
+	var relFP = argpath
+	if argpath != "" {
+		// If the DB name was unnecessarily provided,
+		// trim it off to prevent problems.
+		relFP = S.TrimSuffix(argpath, DBNAME)
+	} else {
 		var e error
-		argpath, e = os.Getwd() // "."
+		relFP, e = os.Getwd() // "."
 		if e != nil {
-			panic(e)
+			if WU.IsWasm() {
+				L.L.Warning("FIXME: Where is DB in browser WASM ?")
+			}
+			L.L.Error("DB: can't get CWD: %w", e)
+			os.Exit(1)
 		}
 	}
-	// If the DB name was accidentally provided, trim it off to prevent problems.
-	var relFP string
-	relFP = S.TrimSuffix(argpath, DBNAME)
-
-	// pDB.DirrPath = *FU.NewBasicPath(relFP)
-	// if !pDB.DirrPath.IsOkayDir() { // PathType() != "DIR" {
-	// dp := FU.NewBasicPath(pDB.BasicPath.AbsFilePathParts.DirPath.S())
+	pDB := new(MmmcDB)
 	dp := FU.NewPathProps(FP.Dir(pDB.PathProps.AbsFP()))
 	if !dp.IsOkayDir() {
-		// retErr := MU.TracedError(fmt.Errorf("DB dir not exist or not a dir: %s", dp))
 		retErr := "DB dir not exist or not a dir: " + dp.String()
-		println(retErr)
+		L.L.Error(retErr)
 		return nil, errors.New(retErr)
 	}
 	pDB.PathProps = *FU.NewPathProps(FP.Join(relFP, "mmmc.db"))
@@ -96,38 +97,33 @@ func NewMmmcDB(argpath string) (*MmmcDB, error) {
 // ForceExistDBandTables creates a new empty DB with the proper schema.
 func (p *MmmcDB) ForceExistDBandTables() {
 	if theDB == nil {
-		panic("db.forcexist.uninitd.L95")
+		L.L.Panic("theDB does not exist yet")
 	}
 	var dest string = p.PathProps.AbsFP()
-	// println("    --> Creating new DB at:", dest)
 	var e error
 	var theSqlDB *sql.DB
 
 	theSqlDB, e = sql.Open("sqlite3", dest)
-	// loggerAdapter := zerologadapter.New(zerolog.New(zerolog.NewConsoleWriter()))
-
 	checkerr(e)
 	e = theSqlDB.Ping()
 	checkerr(e)
 	e = theSqlDB.PingContext(context.Background())
 	checkerr(e)
-	println("    --> New DB created at:", FU.Tildotted(dest))
+	L.L.Okay("New DB created at: " + FU.Tildotted(dest))
 	drivers := sql.Drivers()
-	fmt.Printf("    --> DB driver(s): %+v \n", drivers)
+	L.L.Info("DB driver(s): %+v", drivers)
 	theDB.DB = sqlx.NewDb(theSqlDB, "sqlite3")
 
-	for _, s := range schemasALL {
-		mustExecStmt("CREATE TABLE IF NOT EXISTS " + s)
+	for _, cfg := range AllTableConfigs {
+		p.CreateTable_sqlite(cfg)
 	}
-	p.CreateTable_sqlite(TableConfig_Inbatch)
-	p.CreateTable_sqlite(TableConfig_Contentity)
-
-	// It seems weird that this is necessary, but cos of some retro compatibility,
-	// SQLite does not by default enforce foreign key constraints.
+	// It may seem odd that this is necessary,
+	// but for some retro compatibility, SQLite does
+	// not by default enforce foreign key constraints.
 	mustExecStmt("PRAGMA foreign_keys = ON;")
 }
 
 func (p *MmmcDB) Verify() {
-	// PRAGMA integrity_check;
-	// PRAGMA foreign_key_check;
+	mustExecStmt("PRAGMA integrity_check;")
+	mustExecStmt("PRAGMA foreign_key_check;")
 }
