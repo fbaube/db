@@ -19,9 +19,9 @@ import (
 
 // Times has (create, import, last edit) and uses only ISO-8601 / RFC 3339.
 type Times struct {
-	Created  string
-	Imported string
-	Edited   string
+	T_Cre string
+	T_Imp string
+	T_Edt string
 }
 
 // At the CLI:
@@ -83,7 +83,7 @@ func NewMmmcDB(argpath string) (*MmmcDB, error) {
 		}
 	}
 	pDB := new(MmmcDB)
-	dp := FU.NewPathProps(FP.Dir(pDB.PathProps.AbsFP()))
+	dp := FU.NewPathProps(FP.Dir(pDB.PathProps.AbsFP.S()))
 	if !dp.IsOkayDir() {
 		retErr := "DB dir not exist or not a dir: " + dp.String()
 		L.L.Error(retErr)
@@ -99,7 +99,7 @@ func (p *MmmcDB) ForceExistDBandTables() {
 	if theDB == nil {
 		L.L.Panic("theDB does not exist yet")
 	}
-	var dest string = p.PathProps.AbsFP()
+	var dest string = p.PathProps.AbsFP.S()
 	var e error
 	var theSqlDB *sql.DB
 

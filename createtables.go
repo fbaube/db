@@ -35,6 +35,6 @@ var ColumnSpecs_Topicref = []DbColSpec{
 var TableConfig_Topicref = TableConfig{
 	"topicref",
 	// ONLY foreign keys
-	[]string{"contentity", "contentity"},
+	[]string{"contentity_map", "contentity_topic"},
 	ColumnSpecs_Topicref,
 }

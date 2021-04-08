@@ -18,8 +18,8 @@ func (p *MmmcDB) MoveCurrentToBackup() error {
 		return nil
 	}
 	var cns = NowAsYMDHM()
-	var fromFP string = p.PathProps.AbsFP()
-	var toFP string = FU.AbsFilePath(p.PathProps.AbsFP()).BaseName() + "-" + cns + ".db"
+	var fromFP string = p.PathProps.AbsFP.S()
+	var toFP string = FU.AbsFilePath(p.PathProps.AbsFP).BaseName() + "-" + cns + ".db"
 	// func os.Rename(oldpath, newpath string) error
 	e := os.Rename(fromFP, toFP)
 	if e != nil {
@@ -40,8 +40,8 @@ func (p *MmmcDB) DupeCurrentToBackup() error {
 		return nil
 	}
 	var cns = NowAsYMDHM()
-	var fromFP string = p.PathProps.AbsFP()
-	var toFP string = FU.AbsFilePath(p.PathProps.AbsFP()).BaseName() + "-" + cns + ".db"
+	var fromFP string = p.PathProps.AbsFP.S()
+	var toFP string = FU.AbsFilePath(p.PathProps.AbsFP).BaseName() + "-" + cns + ".db"
 
 	e := FU.CopyFromTo(fromFP, toFP)
 	if e != nil {

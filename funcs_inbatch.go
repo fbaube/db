@@ -33,18 +33,20 @@ func (p *MmmcDB) GetAll_Inbatch() (pp []*Inbatch) {
 // Add_Inbatch adds an input batch to the DB and returns its primary index.
 func (p *MmmcDB) Add_Inbatch(pIB *Inbatch) (int, error) {
 	var rslt sql.Result
+	var stmt string
 	var e error
+
 	if pIB.FilCt == 0 {
 		pIB.FilCt = 1
 	} // HACK
 
 	pIB.T_Cre = time.Now().UTC().Format(time.RFC3339)
 	tx := p.MustBegin()
-	s := "INSERT INTO INBATCH(" +
+	stmt = "INSERT INTO INBATCH(" +
 		"descr, filct, t_cre, relfp, absfp" +
 		") VALUES(" +
 		":descr, :filct, :t_cre, :relfp, :absfp)" // " RETURNING i_INB", p)
-	rslt, e = tx.NamedExec(s, pIB)
+	rslt, e = tx.NamedExec(stmt, pIB)
 	tx.Commit()
 	println("=== ### ===")
 	if e != nil {

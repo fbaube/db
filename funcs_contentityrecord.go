@@ -4,13 +4,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	FP "path/filepath"
+	"time"
 
 	FU "github.com/fbaube/fileutils"
 	L "github.com/fbaube/mlog"
 	XM "github.com/fbaube/xmlmodels"
-	"github.com/jmoiron/sqlx"
 )
 
 // NewContentityRecord works for directories and symlinks too.
@@ -41,7 +42,7 @@ func NewContentityRecord(pPP *FU.PathProps) *ContentityRecord {
 		return pCR
 	}
 	var pAR *XM.AnalysisRecord
-	pAR, e = FU.AnalyseFile(pCR.Raw, FP.Ext(string(pPP.AbsFP())))
+	pAR, e = FU.AnalyseFile(pCR.Raw, FP.Ext(string(pPP.AbsFP)))
 	if e != nil {
 		L.L.Error("DB.newCnty: analyze file failed: " + e.Error())
 		pCR.SetError(fmt.Errorf("fu.newCR: analyze file failed: %w", e))
@@ -87,39 +88,81 @@ func (p *MmmcDB) GetContentityAll() (pp []*ContentityRecord) {
 }
 
 // InsertContentityRecord adds a content item (i.e. a file) to the DB.
-func (p *MmmcDB) InsertContentityRecord(pC *ContentityRecord, pT *sqlx.Tx) (idx int, e error) {
-	var err error
+func (p *MmmcDB) InsertContentityRecord(pC *ContentityRecord) (int, error) {
 	var rslt sql.Result
-	println("REL:", pC.RelFP())
-	println("ABS:", pC.AbsFP())
-	var s string
-	s = fmt.Sprintf(
-		"INSERT INTO CONTENTITY("+
-			"relfp, absfp, "+
-			"t_cre, t_imp, t_edt, "+
-			"metaraw, textraw, "+
-			"mimetype, mtype, roottag, rootatts, "+
-			"xmlcontype, xmldoctype, ditaflavor, ditacontype"+
-			") VALUES("+
-			"\"%s\", \"%s\", "+
-			"\"%s\", \"%s\", \"%s\", "+
-			"\"%s\", \"%s\", "+
-			"\"%s\", \"%s\", \"%s\", \"%s\", "+
-			"\"%s\", \"%s\", \"%s\", \"%s\")",
-		pC.RelFP(), pC.AbsFP(),
-		pC.Created, pC.Imported, pC.Edited,
-		pC.GetSpan(pC.Meta), pC.GetSpan(pC.Text),
-		pC.MimeType, pC.MType, pC.Root.Name, pC.Root.Atts,
-		pC.XmlContype, pC.Doctype, pC.DitaFlavor, pC.DitaContype)
+	var stmt string
+	var e error
+	println("REL:", pC.RelFP)
+	println("ABS:", pC.AbsFP)
 
-	println("EXEC:", s)
+	/*
+		if pC.TextRaw() == "" {
+			pC.textraw = "thetextraw"
+		}
+		if pC.MetaRaw() == "" {
+			pC.metaraw = "themetaraw"
+		}
+	*/
 
-	rslt, err = pT.NamedExec(s, pC)
-	if err != nil {
+	pC.T_Cre = time.Now().UTC().Format(time.RFC3339)
+	tx := p.MustBegin()
+	// "INSERT INTO INBATCH(" +
+	//	"descr, filct, t_cre, relfp, absfp" +
+	//	") VALUES(" +
+	//	":descr, :filct, :t_cre, :relfp, :absfp)" // " RETURNING i_INB", p)
+	stmt = "INSERT INTO CONTENTITY(" +
+		"idx_inbatch, descr, relfp, absfp, " +
+		"t_cre, t_imp, t_edt, " +
+		"metaraw, textraw, " +
+		"mimetype, mtype, " + // roottag, rootatts, " +
+		"xmlcontype, xmldoctype, ditaflavor, ditacontype" +
+		// "xmldoctype, ditaflavor, ditacontype" +
+		") VALUES(" +
+		//	"\"%d\", \"%s\", \"%s\", "+
+		//	"\"%s\", \"%s\", \"%s\", "+
+		//	"\"%s\", \"%s\", "+
+		//	"\"%s\", \"%s\", \"%s\", \"%s\", "+
+		//	"\"%s\", \"%s\", \"%s\", \"%s\")",
+
+		// pC.Idx_Inbatch, pC.RelFP, pC.AbsFP,
+		// ":idx_inbatch, :pathprops.relfp, :pathprops.absfp, " +
+		":idx_inbatch, :descr, :relfp, :absfp, " +
+
+		// pC.Created, pC.Imported, pC.Edited,
+		// ":times.t_cre, :times.t_imp, :times.t_edt, " +
+		":t_cre, :t_imp, :t_edt, " +
+
+		":metaraw, :textraw, " +
+
+		// pC.GetSpan(pC.Meta), pC.GetSpan(pC.Text),
+		// pC.MimeType, pC.MType, pC.Root.Name, pC.Root.Atts,
+		// ":mimetype, :mtype, :root.name, :root.atts, " +
+		":mimetype, :mtype, " +
+		// ":analysisrecord.contentitystructure.root.name, " +
+		// ":analysisrecord.contentitystructure.root.atts, " +
+
+		// pC.XmlContype, pC.Doctype, pC.DitaFlavor, pC.DitaContype)
+		":xmlcontype, :doctype, :ditaflavor, :ditacontype);"
+		// ":doctype, :ditaflavor, :ditacontype);"
+
+	rslt, e = tx.NamedExec(stmt, pC)
+	tx.Commit()
+	println("=== ### ===")
+	if e != nil {
+		L.L.Error("DB.Add_Contentity: %s", e.Error())
+	}
+	if e != nil {
 		println("========")
-		println("DB: NamedExec: ERROR:", err.Error())
+		println("DB: NamedExec: ERROR:", e.Error())
 		println("========")
-		panic("INSERT CONTENT failed")
+		fnam := "./insert-Contentity-failed.sql"
+		e = ioutil.WriteFile(fnam, []byte(stmt), 0644)
+		if e != nil {
+			L.L.Error("Could not write file: " + fnam)
+		} else {
+			L.L.Dbg("Wrote \"INSERT INTO contentity ... \" to: " + fnam)
+		}
+		panic("INSERT CONTENTITY failed")
 	}
 	liid, _ := rslt.LastInsertId()
 	// naff, _ := rslt.RowsAffected()
