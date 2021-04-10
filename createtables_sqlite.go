@@ -32,9 +32,18 @@ func (pDB *MmmcDB) CreateTable_sqlite(ts TableConfig) {
 	CTS += "-- NOTE: integer, not int. \n"
 	if hasFKs {
 		// === FOREIGN KEYS
+		// []string{"map_contentity", "tpc_contentity"},
 		for _, tbl := range ts.ForenKeys {
-			// idx_inb integer not null references INB,
-			CTS += "idx_" + tbl + " integer " + /* not null */ "references " + tbl + ", \n"
+			if S.Contains(tbl, "_") {
+				i := S.LastIndex(tbl, "_")
+				minTbl := tbl[i+1:]
+				println("COMPOUND INDEX: ", minTbl)
+				CTS += "idx_" + tbl + " integer not null references " + minTbl + ", \n"
+			} else {
+				// idx_inb integer not null references INB,
+				// "not null" might be problematic during development.
+				CTS += "idx_" + tbl + " integer not null references " + tbl + ", \n"
+			}
 		}
 	}
 	for _, fld := range ts.Columns {

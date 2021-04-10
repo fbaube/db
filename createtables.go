@@ -7,7 +7,7 @@ import (
 var AllTableConfigs = []TableConfig{
 	TableConfig_Inbatch,
 	TableConfig_Contentity,
-	// TableConfig_Topicref,
+	TableConfig_Topicref,
 }
 
 // Topicref describes a reference from a Map to a Topic. Note that
@@ -19,9 +19,9 @@ var AllTableConfigs = []TableConfig{
 // topic per map file, and see if it creates problems elsewhere later on.
 //
 type Topicref struct {
-	Idx_Topicref int
-	Idx_MapCnty  int
-	Idx_TpcCnty  int
+	Idx_Topicref       int
+	Idx_Map_Contentity int
+	Idx_Tpc_Contentity int
 }
 
 // TableSpec_Topicref describes the table.
@@ -35,6 +35,6 @@ var ColumnSpecs_Topicref = []DbColSpec{
 var TableConfig_Topicref = TableConfig{
 	"topicref",
 	// ONLY foreign keys
-	[]string{"contentity_map", "contentity_topic"},
+	[]string{"map_contentity", "tpc_contentity"},
 	ColumnSpecs_Topicref,
 }
