@@ -37,7 +37,7 @@ func (pDB *MmmcDB) CreateTable_sqlite(ts TableConfig) {
 			if S.Contains(tbl, "_") {
 				i := S.LastIndex(tbl, "_")
 				minTbl := tbl[i+1:]
-				println("COMPOUND INDEX: ", minTbl)
+				L.L.Info("DB compound index: " + tbl + " indexes " + minTbl)
 				CTS += "idx_" + tbl + " integer not null references " + minTbl + ", \n"
 			} else {
 				// idx_inb integer not null references INB,

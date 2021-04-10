@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 
+	L "github.com/fbaube/mlog"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -14,7 +15,7 @@ func (p *MmmcDB) TryColumns(tableName string) {
 
 	rows, e = p.DB.Queryx("SELECT * FROM " + tableName + " LIMIT 1")
 	if e != nil {
-		fmt.Printf("==> TryColumns-1 failed: %v \n", e)
+		L.L.Error("TryColumns-1 failed: %v", e)
 		return
 	}
 	n := 0
@@ -28,11 +29,11 @@ func (p *MmmcDB) TryColumns(tableName string) {
 			fmt.Printf("    COLUMNS as SLICE: %+v \n", cols)
 		}
 	}
-	fmt.Printf("    db.chk-cols: c-slice-n: %d \n", n)
+	// fmt.Printf("    db.chk-cols: c-slice-n: %d \n", n)
 
 	rows, e = p.DB.Queryx("SELECT * FROM " + tableName + " LIMIT 1")
 	if e != nil {
-		fmt.Printf("==> CheckColumns-2 failed: %v", e)
+		L.L.Error("CheckColumns-2 failed: %v", e)
 		return
 	}
 	n = 0
@@ -46,5 +47,5 @@ func (p *MmmcDB) TryColumns(tableName string) {
 			fmt.Printf("    COLUMNS as MAP: %+v \n", results)
 		}
 	}
-	fmt.Printf("    db.chk-cols: str-map-n: %d \n", n)
+	// fmt.Printf("    db.chk-cols: str-map-n: %d \n", n)
 }

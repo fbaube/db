@@ -62,9 +62,10 @@ var stmt *sql.Stmt
 var rslt *sql.Result
 var e error
 
-// NewMmmcDB initializes path-related variables but does not do more.
-// argpath can be a relative path passed to the CLI; if it is "",
-// the DB path is set to the CWD (current working directory).
+// NewMmmcDB does not open a DB, it merely checks that the given path is OK.
+// That is to say, it initializes path-related variables but does not do more.
+// argpath can be a relative path passed to the CLI; if it is "", the DB path
+// is set to the CWD (current working directory).
 func NewMmmcDB(argpath string) (*MmmcDB, error) {
 	var relFP = argpath
 	if argpath != "" {

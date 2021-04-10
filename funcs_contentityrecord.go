@@ -7,10 +7,10 @@ import (
 	"io/ioutil"
 	"log"
 	FP "path/filepath"
-	"time"
 
 	FU "github.com/fbaube/fileutils"
 	L "github.com/fbaube/mlog"
+	SU "github.com/fbaube/stringutils"
 	XM "github.com/fbaube/xmlmodels"
 )
 
@@ -46,7 +46,7 @@ func NewContentityRecord(pPP *FU.PathProps) *ContentityRecord {
 	if e != nil {
 		L.L.Error("DB.newCnty: analyze file failed: " + e.Error())
 		pCR.SetError(fmt.Errorf("fu.newCR: analyze file failed: %w", e))
-		return pCR
+		return nil // pCR
 	}
 	if pAR == nil {
 		panic("NIL pAR")
@@ -92,19 +92,11 @@ func (p *MmmcDB) InsertContentityRecord(pC *ContentityRecord) (int, error) {
 	var rslt sql.Result
 	var stmt string
 	var e error
-	println("REL:", pC.RelFP)
-	println("ABS:", pC.AbsFP)
+	// println("REL:", pC.RelFP)
+	// println("ABS:", pC.AbsFP)
 
-	/*
-		if pC.TextRaw() == "" {
-			pC.textraw = "thetextraw"
-		}
-		if pC.MetaRaw() == "" {
-			pC.metaraw = "themetaraw"
-		}
-	*/
-
-	pC.T_Cre = time.Now().UTC().Format(time.RFC3339)
+	pC.T_Cre = SU.Now() // time.Now().UTC().Format(time.RFC3339)
+	pC.T_Imp = SU.Now() // time.Now().UTC().Format(time.RFC3339)
 	tx := p.MustBegin()
 	stmt = "INSERT INTO CONTENTITY(" +
 		"idx_inbatch, descr, relfp, absfp, " +
@@ -133,7 +125,7 @@ func (p *MmmcDB) InsertContentityRecord(pC *ContentityRecord) (int, error) {
 
 	rslt, e = tx.NamedExec(stmt, pC)
 	tx.Commit()
-	println("=== ### ===")
+	// println("=== ### ===")
 	if e != nil {
 		L.L.Error("DB.Add_Contentity: %s", e.Error())
 	}

@@ -48,7 +48,7 @@ func (p *MmmcDB) Add_Inbatch(pIB *Inbatch) (int, error) {
 		":descr, :filct, :t_cre, :relfp, :absfp)" // " RETURNING i_INB", p)
 	rslt, e = tx.NamedExec(stmt, pIB)
 	tx.Commit()
-	println("=== ### ===")
+	// println("=== ### ===")
 	if e != nil {
 		L.L.Error("DB.Add_Inbatch: %w", e)
 	}
@@ -73,14 +73,16 @@ func (p *MmmcDB) Add_Inbatch(pIB *Inbatch) (int, error) {
 	// otherwise it will use the default.
 	// ============
 
-	var egInb = Inbatch{}
-	var rowsx *sqlx.Rows
-	rowsx, e = p.DB.Queryx("SELECT * FROM INBATCH")
-	TestInbatch(rowsx, &egInb)
+	/*
+		var egInb = Inbatch{}
+		var rowsx *sqlx.Rows
+		rowsx, e = p.DB.Queryx("SELECT * FROM INBATCH")
+		TestInbatch(rowsx, &egInb)
+	*/
 
 	// WORK HERE
 
-	println("NEED: RETURNING (inbatch ID)")
+	L.L.Warning("TODO: RETURNING (inbatch ID)")
 	liid, err := rslt.LastInsertId()
 	if err != nil {
 		panic(err)
