@@ -7,12 +7,12 @@ import (
 
 // Inbatch describes a single import batch at the CLI.
 type Inbatch struct {
-	Idx   int `db:"idx_inbatch"`
-	FilCt int
-	RelFP string
-	AbsFP FU.AbsFilePath // `db:"absfilepath"` // necessary ceremony
-	T_Cre string         // RFC 3339
-	Descr string
+	Idx_Inbatch int
+	FilCt       int
+	RelFP       string
+	AbsFP       FU.AbsFilePath
+	T_Cre       string
+	Descr       string
 }
 
 // TableSpec_Inbatch describes the table.

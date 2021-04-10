@@ -12,7 +12,7 @@ import (
 // properties that are set by the user, rather than dynamically determined.
 type ContentityRecord struct {
 	error
-	Idx_Contentity int // `db:"idx_contentity"`
+	Idx_Contentity int
 	Idx_Inbatch    int // NOTE: Maybe rename to FILESET. And, could be multiple!
 	Descr          string
 	FU.PathProps

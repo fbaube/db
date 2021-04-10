@@ -106,42 +106,28 @@ func (p *MmmcDB) InsertContentityRecord(pC *ContentityRecord) (int, error) {
 
 	pC.T_Cre = time.Now().UTC().Format(time.RFC3339)
 	tx := p.MustBegin()
-	// "INSERT INTO INBATCH(" +
-	//	"descr, filct, t_cre, relfp, absfp" +
-	//	") VALUES(" +
-	//	":descr, :filct, :t_cre, :relfp, :absfp)" // " RETURNING i_INB", p)
 	stmt = "INSERT INTO CONTENTITY(" +
 		"idx_inbatch, descr, relfp, absfp, " +
 		"t_cre, t_imp, t_edt, " +
 		// "metaraw, textraw, " +
-		"mimetype, mtype, " + // roottag, rootatts, " +
+		"mimetype, mtype, " +
+		// roottag, rootatts, " +
 		"xmlcontype, xmldoctype, ditaflavor, ditacontype" +
-		// "xmldoctype, ditaflavor, ditacontype" +
 		") VALUES(" +
-		//	"\"%d\", \"%s\", \"%s\", "+
-		//	"\"%s\", \"%s\", \"%s\", "+
-		//	"\"%s\", \"%s\", "+
-		//	"\"%s\", \"%s\", \"%s\", \"%s\", "+
-		//	"\"%s\", \"%s\", \"%s\", \"%s\")",
 
-		// pC.Idx_Inbatch, pC.RelFP, pC.AbsFP,
 		// ":idx_inbatch, :pathprops.relfp, :pathprops.absfp, " +
 		":idx_inbatch, :descr, :relfp, :absfp, " +
 
-		// pC.Created, pC.Imported, pC.Edited,
 		// ":times.t_cre, :times.t_imp, :times.t_edt, " +
 		":t_cre, :t_imp, :t_edt, " +
 
 		// ":metaraw, :textraw, " +
-
-		// pC.GetSpan(pC.Meta), pC.GetSpan(pC.Text),
-		// pC.MimeType, pC.MType, pC.Root.Name, pC.Root.Atts,
-		// ":mimetype, :mtype, :root.name, :root.atts, " +
+		// ":mimetype, :mtype, " +
 		":mimetype, :mtype, " +
+		// ":root.name, :root.atts, " +
 		// ":analysisrecord.contentitystructure.root.name, " +
 		// ":analysisrecord.contentitystructure.root.atts, " +
 
-		// pC.XmlContype, pC.Doctype, pC.DitaFlavor, pC.DitaContype)
 		":xmlcontype, :doctype, :ditaflavor, :ditacontype);"
 		// ":doctype, :ditaflavor, :ditacontype);"
 

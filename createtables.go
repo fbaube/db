@@ -19,9 +19,9 @@ var AllTableConfigs = []TableConfig{
 // topic per map file, and see if it creates problems elsewhere later on.
 //
 type Topicref struct {
-	Idx         int `db:"idx_topicref"`
-	Idx_MapCnty int
-	Idx_TpcCnty int
+	Idx_Topicref int
+	Idx_MapCnty  int
+	Idx_TpcCnty  int
 }
 
 // TableSpec_Topicref describes the table.
