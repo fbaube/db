@@ -113,7 +113,7 @@ func (p *MmmcDB) InsertContentityRecord(pC *ContentityRecord) (int, error) {
 	stmt = "INSERT INTO CONTENTITY(" +
 		"idx_inbatch, descr, relfp, absfp, " +
 		"t_cre, t_imp, t_edt, " +
-		"metaraw, textraw, " +
+		// "metaraw, textraw, " +
 		"mimetype, mtype, " + // roottag, rootatts, " +
 		"xmlcontype, xmldoctype, ditaflavor, ditacontype" +
 		// "xmldoctype, ditaflavor, ditacontype" +
@@ -132,7 +132,7 @@ func (p *MmmcDB) InsertContentityRecord(pC *ContentityRecord) (int, error) {
 		// ":times.t_cre, :times.t_imp, :times.t_edt, " +
 		":t_cre, :t_imp, :t_edt, " +
 
-		":metaraw, :textraw, " +
+		// ":metaraw, :textraw, " +
 
 		// pC.GetSpan(pC.Meta), pC.GetSpan(pC.Text),
 		// pC.MimeType, pC.MType, pC.Root.Name, pC.Root.Atts,
