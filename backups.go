@@ -23,9 +23,9 @@ func (p *MmmcDB) MoveCurrentToBackup() error {
 	// func os.Rename(oldpath, newpath string) error
 	e := os.Rename(fromFP, toFP)
 	if e != nil {
-		reterr := fmt.Sprintf("can't move current DB to <%s>: %w", toFP, e)
-		L.L.Error(reterr)
-		return errors.New(reterr)
+		reterr := "can't move current DB to <" + toFP + ">: "
+		L.L.Error(reterr + e.Error())
+		return errors.New(fmt.Sprintf(reterr+"%w", e))
 	}
 	L.L.Progress("Old DB moved to: " + toFP)
 	return nil

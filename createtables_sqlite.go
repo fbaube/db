@@ -3,9 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"os"
 	S "strings"
 
 	L "github.com/fbaube/mlog"
@@ -95,7 +93,8 @@ func (pDB *MmmcDB) CreateTable_sqlite(ts TableConfig) {
 		L.L.Dbg("Wrote \"CREATE TABLE " + ts.TableName + " ... \" to: " + fnam)
 	}
 	pDB.DB.MustExec(CTS)
-	pDB.DumpTableSchema_sqlite(ts.TableName, os.Stdout)
+	ss := pDB.DumpTableSchema_sqlite(ts.TableName)
+	L.L.Dbg(ts.TableName + " SCHEMA: " + ss)
 	// println("TODO: Insert record with IDX 0 and string descr's")
 	//    and ("TODO: Dump all table records (i.e. just one)")
 }
@@ -127,18 +126,20 @@ func (pDB *MmmcDB) DbTblColsIRL(tableName string) []*DbColIRL {
 	return retval
 }
 
-func (pDB *MmmcDB) DumpTableSchema_sqlite(tableName string, w io.Writer) {
+func (pDB *MmmcDB) DumpTableSchema_sqlite(tableName string) string {
 
 	var theCols []*DbColIRL
-	theCols = pDB.DbTblColsIRL(tableName)
-
+	var sb S.Builder
 	var sType string
+
+	theCols = pDB.DbTblColsIRL(tableName)
 	for i, c := range theCols {
 		sType = ""
 		if c.TxtIntKeyEtc != "text" {
-			sType = string(c.TxtIntKeyEtc) + "!:"
+			sType = "(" + string(c.TxtIntKeyEtc) + "!)"
 		}
-		fmt.Fprintf(w, "[%d]%s%s / ", i, sType, c.Code)
+		sb.Write([]byte(fmt.Sprintf("[%d]%s%s / ", i, sType, c.Code)))
 	}
-	fmt.Fprintf(w, "%d fields \n", len(theCols))
+	sb.Write([]byte(fmt.Sprintf("%d fields", len(theCols))))
+	return sb.String()
 }
