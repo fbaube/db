@@ -54,13 +54,13 @@ func NewContentityRecord(pPP *FU.PathProps) *ContentityRecord {
 	pCR.AnalysisRecord = *pAR
 	// SPLIT FILE!
 	if !pAR.ContentityStructure.HasNone() {
-		L.L.Okay("Key element triplet: Root<%s> Meta<%s> Text<%s>",
+		L.L.Okay("Key elm triplet: Root<%s> Meta<%s> Text<%s>",
 			pAR.ContentityStructure.Root.String(),
 			pAR.ContentityStructure.Meta.String(),
 			pAR.ContentityStructure.Text.String())
 	} else if pAR.FileType() == "MKDN" {
 		// pAR.KeyElms.SetToAllText()
-		L.L.Warning("TODO set MKDN all text, and ranges")
+		// L.L.Warning("TODO set MKDN all text, and ranges")
 	} else {
 		L.L.Warning("Found no key elms (root,meta,text)")
 	}
