@@ -1,11 +1,10 @@
-package db
+package dbutils
 
 import (
 	"fmt"
 
 	FU "github.com/fbaube/fileutils"
-	SB "github.com/fbaube/semblox"
-	XM "github.com/fbaube/xmlmodels"
+	XU "github.com/fbaube/xmlutils"
 )
 
 // ContentityRecord is basically the content plus its "dead properties" -
@@ -17,7 +16,7 @@ type ContentityRecord struct {
 	Descr          string
 	FU.PathProps
 	Times
-	XM.AnalysisRecord
+	XU.AnalysisRecord
 	// For these next two fields, instead put the refs & defs
 	//   into another table that FKEY's into this table.
 	// ExtlLinkRefs // links that point outside this File
@@ -37,17 +36,17 @@ var ColumnSpecs_Contentity = []DbColSpec{
 	D_TmCre,
 	D_TmImp,
 	D_TmEdt,
-	DbColSpec{SB.D_TXT, "descr", "Description", "Content item description"},
-	// DbColSpec{SB.D_TXT, "metaraw", "Meta (raw)", "Metadata/header (raw)"},
-	// DbColSpec{SB.D_TXT, "textraw", "Text (raw)", "Text/body (raw)"},
-	DbColSpec{SB.D_TXT, "mimetype", "MIME type", "MIME type"},
-	DbColSpec{SB.D_TXT, "mtype", "MType", "MType"},
-	// DbColSpec{SB.D_TXT, "roottag", "Root tag", "XML root tag"},
-	// DbColSpec{SB.D_TXT, "rootatts", "Root att's", "XML root tag attributes"},
-	DbColSpec{SB.D_TXT, "xmlcontype", "XML contype", "XML content type"},
-	DbColSpec{SB.D_TXT, "xmldoctype", "XML Doctype", "XML Doctype"},
-	DbColSpec{SB.D_TXT, "ditaflavor", "(Lw)DITA flavor", "(Lw)DITA flavor"},
-	DbColSpec{SB.D_TXT, "ditacontype", "(Lw)DITA contype", "(Lw)DITA content type"},
+	DbColSpec{D_TXT, "descr", "Description", "Content item description"},
+	// DbColSpec{D_TXT, "metaraw", "Meta (raw)", "Metadata/header (raw)"},
+	// DbColSpec{D_TXT, "textraw", "Text (raw)", "Text/body (raw)"},
+	DbColSpec{D_TXT, "mimetype", "MIME type", "MIME type"},
+	DbColSpec{D_TXT, "mtype", "MType", "MType"},
+	// DbColSpec{D_TXT, "roottag", "Root tag", "XML root tag"},
+	// DbColSpec{D_TXT, "rootatts", "Root att's", "XML root tag attributes"},
+	DbColSpec{D_TXT, "xmlcontype", "XML contype", "XML content type"},
+	DbColSpec{D_TXT, "xmldoctype", "XML Doctype", "XML Doctype"},
+	DbColSpec{D_TXT, "ditaflavor", "(Lw)DITA flavor", "(Lw)DITA flavor"},
+	DbColSpec{D_TXT, "ditacontype", "(Lw)DITA contype", "(Lw)DITA content type"},
 }
 
 var TableConfig_Contentity = TableConfig{

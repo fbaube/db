@@ -1,8 +1,4 @@
-package db
-
-import (
-	SB "github.com/fbaube/semblox"
-)
+package dbutils
 
 var AllTableConfigs = []TableConfig{
 	TableConfig_Inbatch,
@@ -25,7 +21,7 @@ type Topicref struct {
 }
 
 // TableSpec_Topicref describes the table.
-var TableSpec_Topicref = DbTblSpec{SB.D_TBL,
+var TableSpec_Topicref = DbTblSpec{D_TBL,
 	"TRF", "topicref", "Reference from map to topic"}
 
 var ColumnSpecs_Topicref = []DbColSpec{

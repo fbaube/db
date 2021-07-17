@@ -1,8 +1,7 @@
-package db
+package dbutils
 
 import (
 	FU "github.com/fbaube/fileutils"
-	SB "github.com/fbaube/semblox"
 )
 
 // Inbatch describes a single import batch at the CLI.
@@ -16,14 +15,14 @@ type Inbatch struct {
 }
 
 // TableSpec_Inbatch describes the table.
-var TableSpec_Inbatch = DbTblSpec{SB.D_TBL, "INB", "inbatch", "Batch import of files"}
+var TableSpec_Inbatch = DbTblSpec{D_TBL, "INB", "inbatch", "Batch import of files"}
 
 var ColumnSpecs_Inbatch = []DbColSpec{
 	D_RelFP,
 	D_AbsFP,
 	D_TmCre,
-	DbColSpec{SB.D_TXT, "descr", "Batch descr.", "Inbatch description"},
-	DbColSpec{SB.D_INT, "filct", "Nr. of files", "Number of files"},
+	DbColSpec{D_TXT, "descr", "Batch descr.", "Inbatch description"},
+	DbColSpec{D_INT, "filct", "Nr. of files", "Number of files"},
 }
 
 var TableConfig_Inbatch = TableConfig{

@@ -1,4 +1,4 @@
-package db
+package dbutils
 
 import (
 	"database/sql"
@@ -7,7 +7,6 @@ import (
 	S "strings"
 
 	L "github.com/fbaube/mlog"
-	SB "github.com/fbaube/semblox"
 )
 
 // CreateTable_sqlite creates a table for our simplified SQLite DB model where
@@ -46,7 +45,7 @@ func (pDB *MmmcDB) CreateTable_sqlite(ts TableConfig) {
 	}
 	for _, fld := range ts.Columns {
 		switch fld.TxtIntKeyEtc {
-		case SB.D_INT:
+		case D_INT:
 			// e.g.: filect int not null check (filect >= 0) default 0
 			// also: `Col1 INTEGER CHECK (typeof(Col1) == 'integer')`
 			//
@@ -64,7 +63,7 @@ func (pDB *MmmcDB) CreateTable_sqlite(ts TableConfig) {
 				}
 			*/
 			CTS += ", \n"
-		case SB.D_TXT:
+		case D_TXT:
 			CTS += fld.Code + " text not null check (typeof(" + fld.Code + ") == 'text'), \n"
 		default:
 			panic("Unhandled: " + fld.TxtIntKeyEtc)
@@ -119,7 +118,7 @@ func (pDB *MmmcDB) DbTblColsIRL(tableName string) []*DbColIRL {
 	}
 	for _, ct := range CTs {
 		dci := new(DbColIRL)
-		dci.TxtIntKeyEtc = SB.TxtIntKeyEtc(ct.DatabaseTypeName())
+		dci.TxtIntKeyEtc = TxtIntKeyEtc(ct.DatabaseTypeName())
 		dci.Code = ct.Name()
 		retval = append(retval, dci)
 	}

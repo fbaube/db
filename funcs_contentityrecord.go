@@ -1,4 +1,4 @@
-package db
+package dbutils
 
 import (
 	"database/sql"
@@ -11,7 +11,7 @@ import (
 	FU "github.com/fbaube/fileutils"
 	L "github.com/fbaube/mlog"
 	SU "github.com/fbaube/stringutils"
-	XM "github.com/fbaube/xmlmodels"
+	XU "github.com/fbaube/xmlutils"
 )
 
 // NewContentityRecord works for directories and symlinks too.
@@ -41,7 +41,7 @@ func NewContentityRecord(pPP *FU.PathProps) *ContentityRecord {
 		pCR.SetError(fmt.Errorf("DB.newCnty: cannot fetch content: %w", e))
 		return pCR
 	}
-	var pAR *XM.AnalysisRecord
+	var pAR *XU.AnalysisRecord
 	pAR, e = FU.AnalyseFile(pCR.Raw, FP.Ext(string(pPP.AbsFP)))
 	if e != nil {
 		L.L.Error("DB.newCnty: analyze file failed: " + e.Error())

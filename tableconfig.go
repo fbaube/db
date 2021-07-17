@@ -1,4 +1,4 @@
-package db
+package dbutils
 
 // TableConfig assumes that when specifying the column types for a DB table,
 // it is enough to use strings and integers. Also a primary key is assumed

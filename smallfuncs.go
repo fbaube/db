@@ -1,4 +1,4 @@
-package db
+package dbutils
 
 func checkerr(e error) {
 	if e == nil {
